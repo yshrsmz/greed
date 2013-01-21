@@ -1,0 +1,17 @@
+{
+  "author": "Shimizu Yasuhiro <the.phantom.bane@gmail.com>",
+  "name": "Greed.js",
+  "description": "JavaScript Utility Library",
+  "version": "0.0.1",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "grunt-contrib": "~0.3.0",
+    "testacular": "~0.4.0",
+    "grunt-testacular": "~0.2.2",
+    "grunt-exec": "~0.3.0"
+  },
+  "optionalDependencies": {}
+}
