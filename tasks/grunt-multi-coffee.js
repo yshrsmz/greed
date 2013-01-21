@@ -42,7 +42,7 @@ module.exports = function(grunt) {
         });
     });
     
-    grunt.registerMultiTask('coffee', 'compile coffeeScripts', function() {
+    grunt.registerMultiTask('coffee_multi', 'compile coffeeScripts', function() {
         
         var done = this.async();
         var files = this.data.files;

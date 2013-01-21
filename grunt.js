@@ -35,7 +35,7 @@ module.exports = function(grunt) {
     },
     coffee_multi: {
         dist1: {
-            files: ['src/greed.coffee', 'src/promise.coffee', 'src/ajax.coffee'],
+            files: ['src/greed.coffee', 'src/deffered.coffee', 'src/ajax.coffee'],
             dest: 'js/greed.min.js'
         }
     },
