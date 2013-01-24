@@ -19,18 +19,18 @@ module.exports = function(grunt) {
             //}
             each: {
                 files: {
-                    'js/*.js': ['src/**/*.coffee']
+                    'src/js/*.js': ['src/coffee/**/*.coffee']
                 }
             }
         },
         coffee_multi: {
             concat: {
-                files: ['src/greed.coffee', 'src/deferred.coffee', 'src/ajax.coffee'],
-                dest: 'js/concat/greed.min.js'
+                files: ['src/coffee/greed.coffee', 'src/coffee/deferred.coffee', 'src/coffee/ajax.coffee'],
+                dest: 'src/js_concat/greed.min.js'
             },
             each: {
-                dir: 'src/',
-                dest: 'js/'
+                dir: 'src/coffee/',
+                dest: 'src/js/'
             }
         },
         watch: {
