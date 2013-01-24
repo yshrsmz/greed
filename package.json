@@ -8,10 +8,10 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "grunt-contrib": "~0.3.0",
-    "testacular": "~0.4.0",
-    "grunt-testacular": "~0.2.2",
-    "grunt-exec": "~0.3.0"
+    "grunt-exec": "git://github.com/jharding/grunt-exec.git#dev",
+    "grunt-contrib-coffee": "git://github.com/gruntjs/grunt-contrib-coffee.git"
   },
-  "optionalDependencies": {}
+  "optionalDependencies": {
+    "grunt-contrib-coffee": "git://github.com/gruntjs/grunt-contrib-coffee.git"
+  }
 }

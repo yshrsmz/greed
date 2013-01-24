@@ -4,7 +4,23 @@
  * refs: http://takazudo.github.com/blog/entry/2012-04-14-grunt-coffee.html
  */
 module.exports = function(grunt) {
-    var log = grunt.log;
+    var log = grunt.log,
+        proc = require("child_process");
+        
+    var exec = function(opts, done) {
+        var command = opts.cmd + ' ' + opts.args.join(' ');
+        proc.exec(command, opts.opts, function(code, stdout, stderr) {
+            if (!done) {
+                return;
+            }
+            
+            if (code === 0) {
+                done(null, stdout, code);
+            } else {
+                done(code, stderr, code);
+            }
+        });
+    };
     
     var handleResult = function (from, dest, err, stdout, code, done) {
         if (err) {
@@ -18,18 +34,18 @@ module.exports = function(grunt) {
         }
     }
     
-    grunt.registerHelper('coffee_dir_to_dir', function(fromdir, dest, done) {
+    var coffee_dir_to_dir = function(fromdir, dest, done) {
        var args = {
            cmd: 'coffee',
            args: ['--compile', '--output', dest, fromdir]
        };
        
-       grunt.helper('exec', args, function(err, stdout, code) {
+       exec(args, function(err, stdout, code) {
            handleResult(fromdir, dest, err, stdout, code, done);
        });
-    });
+    };
     
-    grunt.registerHelper('coffee_multi_to_one', function(srcs, dest, done) {
+    var coffee_multi_to_one = function(srcs, dest, done) {
         srcs = srcs.join(' ');
         
         var args = {
@@ -37,10 +53,10 @@ module.exports = function(grunt) {
             args: ['--join', dest, '--compile', srcs]
         };
         
-        grunt.helper('exec', args, function(err, stdout, code) {
+        exec(args, function(err, stdout, code) {
             handleResult(srcs, dest, err, stdout, code, done);
         });
-    });
+    };
     
     grunt.registerMultiTask('coffee_multi', 'compile coffeeScripts', function() {
         
@@ -54,13 +70,13 @@ module.exports = function(grunt) {
             if (!dest) {
                 dest = dir;
             }
-            grunt.helper('coffee_dir_to_dir', dir, dest, done);
+            coffee_dir_to_dir(dir, dest, done);
             return;
         }
         
         // ex: ['1.coffee', '2.coffee'] -> foo.js
         if (files) {
-            grunt.helper('coffee_multi_to_one', files, dest, done);
+            coffee_multi_to_one(files, dest, done);
             return;
         }
         
