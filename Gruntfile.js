@@ -17,11 +17,11 @@ module.exports = function(grunt) {
             //        }
             //    })
             //}
-            each: {
-                files: {
-                    'src/js/*.js': ['src/coffee/**/*.coffee']
-                }
-            }
+            //each: {
+            //    files: {
+            //        'src/js/*.js': ['src/coffee/**/*.coffee']
+            //    }
+            //}
         },
         coffee_multi: {
             concat: {
@@ -31,18 +31,77 @@ module.exports = function(grunt) {
             each: {
                 dir: 'src/coffee/',
                 dest: 'src/js/'
+            },
+            test: {
+                dir: 'test/spec/coffee/',
+                dest: 'test/spec/js/'
+            }
+        },
+        jasmine: {
+//            src: ['src/js/**/*.js'],
+//                errorReporting: true,
+//                server: {
+//                    port: process.env.PORT
+//                },
+//                phantomjs: {
+//                    'ignore-ssl-errors': true
+//                }
+            part: {
+                src: ['src/js/**.js'],
+                errorReporting: true,
+                server: {
+                    port: process.env.PORT
+                },
+                phantomjs: {
+                    'ignore-ssl-errors': true
+                },
+                options: {
+                    specs: ['test/spec/js/*Spec.js']
+                }
+            },
+            all: {
+                src:['src/js_concat/greed.min.js'],
+                errorReporting: true,
+                server: {
+                    port: process.env.PORT
+                },
+                phantomjs: {
+                    'ignore-ssl-errors': true
+                },
+                options: {
+                    specs: ['test/spec/js/*Spec.js']
+                }
             }
         },
         watch: {
+            jasmine: {
+                files: ['test/spec/js/*Spec.js', 'src/js_concat/*.js'],
+                tasks: ['jasmine:all']
+            },
+            coffee_each: {
+                files: ['src/coffee/**/*.coffee'],
+                tasks: ['coffee_multi:each', 'coffee_multi:concat']
+            },
+//            coffee_concat: {
+//                files: ['src/coffee/**/*.coffee'],
+//                tasks: ['coffee_multi:concat']
+//            },
+            coffee_test: {
+                files: ['test/spec/coffee/**/*.coffee'],
+                tasks: ['coffee_multi:test']
+            }
             
         }
     });
     
+    grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-coffee');
     grunt.loadNpmTasks('grunt-exec');
+    //grunt.loadNpmTasks('grunt-buster');
     
     
-    grunt.registerTask('default', ['coffee']);
+    grunt.registerTask('default', ['coffee_multi']);
     
     
     grunt.loadTasks('tasks');

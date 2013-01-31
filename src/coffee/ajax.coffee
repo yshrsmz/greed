@@ -1,5 +1,8 @@
+# Greed Ajax function
+# TODO integrate Greed.Deferred
+window.Greed = {} unless 'Greed' of window
 do (Greed) ->
-    _g = Greed
+    _g = Greed or {}
     _doc = window.document
     _g.active = 0
     emptyFunc = `function() {}`
@@ -47,4 +50,4 @@ do (Greed) ->
         console.log 'ajax json method'
     
     
-    null
+    return

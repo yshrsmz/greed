@@ -1,7 +1,10 @@
-#https://github.com/sudhirj/simply-deferred/blob/master/deferred.js
-#https://github.com/wookiehangover/underscore.deferred/blob/master/underscore.deferred.js
+# https://github.com/sudhirj/simply-deferred/blob/master/deferred.js
+# https://github.com/wookiehangover/underscore.deferred/blob/master/underscore.deferred.js
+# TODO integrate with Greed.ajax hoge 
 
-do (Greed) ->
+window.Greed = {} unless 'Greed' of window
+
+do (Greed ) ->
     _g = Greed or {}
     
     AP = Array.prototype
@@ -12,12 +15,12 @@ do (Greed) ->
     forEach = AP.forEach
     indexOf = AP.indexOf
     slice = AP.slice
-    isArray = AP.isArray
-    reduce = AP.reduce
+    isArray = Array.isArray
     
     PENDING = 'pending'
     RESOLVED = 'resolved'
     REJECTED = 'rejected'
+    
     
     hasOwn = (obj, prop) -> obj?.hasOwnProperty prop
     
@@ -26,7 +29,7 @@ do (Greed) ->
     flatten = (array) ->
         return flatten slice.call(array) if isArguments array
         return [array] if not isArray array
-        return reduce (memo, value) ->
+        return array.reduce (memo, value) ->
             return memo.concat flatten value if isArray value
             memo.push value
             return memo
@@ -76,16 +79,23 @@ do (Greed) ->
         
         reject: _close REJECTED, _failCallbacks
         
-        Promise: (candidate) ->
+        resolveWith: (context, args...) ->
+            execute [_doneCallbacks, _alwaysCallbacks], args, context
+            
+        rejectWith: (context, args...) ->
+            execute [_failCallbacks, _alwaysCallbacks], args, context
+        
+        promise: (candidate) ->
             candidate = candidate or {}
             candidate.state = _state
             
             storeCallbacks = (shouldExecuteNow, holder) ->
-                if _state is PENDING
-                    holder.push flatten arguments...
-                if shouldExecuteNow 
-                    execute arguments, _closingArguments
-                return
+                return ->
+                    if _state is PENDING
+                        holder.push flatten arguments...
+                    if shouldExecuteNow 
+                        execute arguments, _closingArguments
+                    return
                 
             _pipe = (doneFilter, failFilter) ->
                 deferred = new Deferred()
@@ -108,7 +118,7 @@ do (Greed) ->
             candidate.then = _pipe
             
             return candidate
-        
+    
         
     _when = ->
         trigger = new Deferred()
