@@ -38,14 +38,6 @@ module.exports = function(grunt) {
             }
         },
         jasmine: {
-//            src: ['src/js/**/*.js'],
-//                errorReporting: true,
-//                server: {
-//                    port: process.env.PORT
-//                },
-//                phantomjs: {
-//                    'ignore-ssl-errors': true
-//                }
             part: {
                 src: ['src/js/**.js'],
                 errorReporting: true,
@@ -69,6 +61,7 @@ module.exports = function(grunt) {
                     'ignore-ssl-errors': true
                 },
                 options: {
+                    helpers: ['test/lib/jasmine-dom-fixtures.js', 'test/lib/jasmine-dom-matchers.js'],
                     specs: ['test/spec/js/*Spec.js']
                 }
             }
