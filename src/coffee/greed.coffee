@@ -1,3 +1,4 @@
+
 Greed  = ->
     console.log 'greed.js is my personal utility library'
     console.log 'core module '
@@ -20,27 +21,57 @@ Greed.is.prototype.TYPE_NUMBER = "Number"
 ###
 class editing utilities
 ###
-Greed.addClass = (el, clas) ->
-    el?.classList.add clas
+Greed.addClass = (el, clases) ->
+    if not el then return
+    
+    if not Array.isArray clases then clases = [clases]
+    
+    el.classList.add clas for clas in clases
+    
     return
 
-Greed.removeClass = (el, clas) ->
-    el?.classList.remove clas
+Greed.removeClass = (el, clases) ->
+    if not el then return
+    
+    if not Array.isArray clases then clases = [clases]
+    
+    el.classList.remove clas for clas in clases
+    
     return
     
-Greed.hasClass = (el, clases) ->
+Greed.hasClass = (el, clases, hasAll) ->
     if not el then return
         
     if not Array.isArray(clases) then clases = [clases]
-        
-    for clas in clases
-        if el.classList.contains clas
-            return true
-            
-    return false
+    
+    if hasAll
+        for clas in clases
+            if not el.classList.contains clas
+                return false
+                
+        return true
+    else
+        for clas in clases
+            if el.classList.contains clas
+                return true
+                
+        return false
     
 Greed.toggleClass = (el, clas) ->
-    el?.classList.toggle clas
+    if not el then return
+    el.classList.toggle clas
+    
+###
+image lazy load
+###
+Greed.lazyLoadImg = ->
+    images = document.querySelectorAll "img[data-lazy-src]"
+    
+    [].forEach.call images, (image) ->
+        image.src = image.getAttribute "data-lazy-src"
+        return
+        
+    return
     
 # export Greed to globals
 window.Greed = Greed

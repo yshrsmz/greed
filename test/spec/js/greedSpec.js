@@ -80,4 +80,90 @@
     });
   });
 
+  describe("_g.hasClass()", function() {
+    var testElement;
+    testElement = void 0;
+    beforeEach(function() {
+      return testElement = sandbox({
+        "class": 'foo bar'
+      });
+    });
+    it("_g.hasClass() can tell whether or not given element has given class", function() {
+      expect(_g.hasClass(testElement, "foo")).toBe(true);
+      expect(_g.hasClass(testElement, "bar")).toBe(true);
+      expect(_g.hasClass(testElement, "hoo")).toBe(false);
+    });
+    it("_g.hasClass() can take array of class as second argument", function() {
+      expect(_g.hasClass(testElement, ["foo", "bar"])).toBe(true);
+      expect(_g.hasClass(testElement, ["foo", "hoo"])).toBe(true);
+      expect(_g.hasClass(testElement, ["hoo", "foo"])).toBe(true);
+      expect(_g.hasClass(testElement, ["hoo", "var"])).toBe(false);
+    });
+    it("if 3rd argument is true, _g.hasClass() returns true only if the given element has all of the given classes", function() {
+      expect(_g.hasClass(testElement, "foo", true)).toBe(true);
+      expect(_g.hasClass(testElement, ["foo", "bar"], true)).toBe(true);
+      expect(_g.hasClass(testElement, ["bar", "foo"], true)).toBe(true);
+      expect(_g.hasClass(testElement, ["foo", "hoo"], true)).toBe(false);
+      expect(_g.hasClass(testElement, ["hoo", "foo"], true)).toBe(false);
+      expect(_g.hasClass(testElement, ["hoo", "var"], true)).toBe(false);
+    });
+  });
+
+  describe("_g.addClass()", function() {
+    var node;
+    node = void 0;
+    beforeEach(function() {
+      return node = sandbox();
+    });
+    it("_g.addClass() adds given class to given element", function() {
+      _g.addClass(node, "foo");
+      return expect(node).toHaveClass("foo");
+    });
+    it("_g.addClass() can take array of class as second argument, and add those classes to given element", function() {
+      _g.addClass(node, ['foo', 'bar']);
+      expect(node.className).toEqual("foo bar");
+    });
+  });
+
+  describe("_g.removeClass()", function() {
+    var node;
+    node = void 0;
+    beforeEach(function() {
+      return node = sandbox({
+        "class": "foo bar"
+      });
+    });
+    it("_g.removeClass() removes given class from given argument", function() {
+      _g.removeClass(node, "foo");
+      expect(node.className).toEqual("bar");
+    });
+    it("_g.removeClass() can take array of class as second argument, and reove those classes from given element", function() {
+      _g.removeClass(node, ["foo", "bar"]);
+      return expect(node.className).toEqual("");
+    });
+  });
+
+  describe("_g.toggleClass()", function() {
+    var node;
+    node = void 0;
+    beforeEach(function() {
+      return node = sandbox();
+    });
+    it("_g.toggleClass() remove class from given element, if the class exists", function() {
+      node.className = "foo";
+      _g.toggleClass(node, "foo");
+      expect(node.className).toEqual("");
+      node.className = "foo bar";
+      _g.toggleClass(node, "bar");
+      expect(node.className).toEqual("foo");
+    });
+    return it("_g.toggleClass() adds class to given element, if the class does not exist", function() {
+      _g.toggleClass(node, "foo");
+      expect(node.className).toEqual("foo");
+      node.className = "bar";
+      _g.toggleClass(node, "foo");
+      expect(node.className).toEqual("bar foo");
+    });
+  });
+
 }).call(this);
