@@ -1,120 +1,243 @@
+root = @
+
 describe "Deferred", ->
-    prepareDeferred = ->
-        deferred = new Greed.Deferred()
-        return deferred
         
-    it "Deferred should exist in Greed", ->
+    dfr = undefined
+    
+    beforeEach ->
+        dfr = new Greed.Deferred()
+        
+    it "should exist in Greed", ->
         
         expect("Deferred" of window.Greed).toBe true
         
         return
         
-    describe "Deferred methods", ->
-        deferred = undefined
+    it "should initialize to state 'pending'", ->
         
-        beforeEach ->
-            deferred = new _g.Deferred()
-            return
-            
-        it "always() is function", ->
-            expect("always" of deferred).toBe true
-            expect(_g.is("Function", deferred.always)).toBe true
-            
-        it "done() is function", ->
-            expect("done" of deferred).toBe true
-            expect(_g.is("Function", deferred.done)).toBe true
-            
-        it "fail() is function", ->
-            expect("fail" of deferred).toBe true
-            expect(_g.is("Function", deferred.fail)).toBe true
-            
-        it "pipe() is function", ->
-            expect("pipe" of deferred).toBe true
-            expect(_g.is("Function", deferred.pipe)).toBe true
+        expect(dfr.state()).toEqual "pending"
+        return
         
-        it "then() is function", ->
-            expect("then" of deferred).toBe true
-            expect(_g.is("Function", deferred.then)).toBe true
+    it "should change its state to 'resolved' when resolved", ->
+        dfr.resolve()
+        expect(dfr.state()).toEqual "resolved"
+        return
         
-        it "when() is function", ->
-            expect("when" of deferred).toBe true
-            expect(_g.is("Function", deferred.when)).toBe true
-            
-        it "promise() is function", ->
-            expect("promise" of deferred).toBe true
-            expect(_g.is("Function", deferred.promise)).toBe true
-            
-        it "reject() is function", ->
-            expect("reject" of deferred).toBe true
-            expect(_g.is("Function", deferred.reject)).toBe true
-            
-        it "resolve() is function", ->
-            expect("resolve" of deferred).toBe true
-            expect(_g.is("Function", deferred.resolve)).toBe true
-            
-        it "rejectWith() is function", ->
-            expect("rejectWith" of deferred).toBe true
-            expect(_g.is("Function", deferred.rejectWith)).toBe true
-            
-        it "resolveWith() is function", ->
-            expect("resolveWith" of deferred).toBe true
-            expect(_g.is("Function", deferred.resolveWith)).toBe true
+    it "should change its state to 'rejected' when rejected", ->
+        dfr.reject()
+        expect(dfr.state()).toEqual "rejected"
+        return
+        
+    it "should not change state after resolved or rejected", ->
+        dfr.resolve()
+        dfr.reject()
+        expect(dfr.state()).toEqual "resolved"
+        
+        dfr = new Greed.Deferred()
+        dfr.reject()
+        dfr.resolve()
+        expect(dfr.state()).toEqual "rejected"
+        
+        return
+        
+    it "should execute done & always callbacks after resolving, and not execute fail callbacks", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        dfr
+            .done(doneSpy)
+            .fail(failSpy)
+            .always(alwaysSpy)
+        
+        dfr.resolve()
+        
+        expect(doneSpy).toHaveBeenCalled()
+        expect(failSpy).not.toHaveBeenCalled()
+        expect(alwaysSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should execute fail & always callbacks after rejecting, and not execute done callbacks", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        dfr
+            .done(doneSpy)
+            .fail(failSpy)
+            .always(alwaysSpy)
+        
+        dfr.reject()
+        
+        expect(doneSpy).not.toHaveBeenCalled()
+        expect(failSpy).toHaveBeenCalled()
+        expect(alwaysSpy).toHaveBeenCalled()
+        
         return
     
-    describe "Deferred always behavior", ->
-        deferred = undefined
+    it "should execute done callbacks added with then when resolving", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
         
-        #spy function for always()
-        alwaysSpyF = undefined
+        dfr.then doneSpy, failSpy
+            
+        dfr.resolve()
         
-        #spy function for done()
-        doneSpyF = undefined
+        expect(doneSpy).toHaveBeenCalled()
+        expect(failSpy).not.toHaveBeenCalled()
         
-        #spy function for fail()
-        failSpyF = undefined
+        return
+        
+    it "should execute fail callbacks added with then when rejecting", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        dfr.then doneSpy, failSpy
+            
+        dfr.reject()
+        
+        expect(doneSpy).not.toHaveBeenCalled()
+        expect(failSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should execute done callbacks when added after resolved, and not execute fail callbacks", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        dfr.resolve()
+        dfr
+            .done(doneSpy)
+            .fail(failSpy)
+            .always(alwaysSpy)
+            
+        expect(doneSpy).toHaveBeenCalled()
+        expect(failSpy).not.toHaveBeenCalled()
+        expect(alwaysSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should execute fail callbacks when added after rejected, and not execute done callbacks", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        dfr.reject()
+        dfr
+            .done(doneSpy)
+            .fail(failSpy)
+            .always(alwaysSpy)
+            
+        expect(doneSpy).not.toHaveBeenCalled()
+        expect(failSpy).toHaveBeenCalled()
+        expect(alwaysSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should resolve/reject with context", ->
+        context = new Array()
+        
+        dfr.done ->
+            expect(@).toEqual context
+            
+        dfr.resolveWith context
+        
+        dfr = new Greed.Deferred()
+        dfr.fail ->
+            expect(@).toEqual context
+            
+        dfr.rejectWith context
+        
+        return
+        
+    it "should resolve with arguments", ->
+        
+        dfr.done (firstArg, secondArg) ->
+            expect(firstArg).toEqual 123
+            expect(secondArg).toEqual "foo"
+            expect(@).toEqual root
+            
+            return
+        
+        dfr.resolve 123, "foo"
+        
+        return
+        
+    it "should reject with arguments", ->
+        
+        dfr.fail (firstArg, secondArg) ->
+            expect(firstArg).toEqual 123
+            expect(secondArg).toEqual "foo"
+            expect(@).toEqual root
+            
+            return
+        
+        dfr.reject 123, "foo"
+        
+        return
+        
+    it "should resolve with context and arguments", ->
+        
+        context = new Array()
+        
+        dfr = new Greed.Deferred()
+        dfr.fail (firstArg, secondArg) ->
+            expect(firstArg).toEqual 123
+            expect(secondArg).toEqual "foo"
+            expect(@).toEqual context
+            
+            return
+            
+        dfr.resolveWith context, 123, "foo"
+        
+        return
+        
+    it "should reject with context and arguments", ->
+        
+        context = new Array()
+        
+        dfr = new Greed.Deferred()
+        dfr.fail (firstArg, secondArg) ->
+            expect(firstArg).toEqual 123
+            expect(secondArg).toEqual "foo"
+            expect(@).toEqual context
+            
+            return
+            
+        dfr.rejectWith context, 123, "foo"
+        
+        return
+    
+    describe "Deferred.then() behavior", ->
+        defer = undefined
+        promise = undefined
         
         beforeEach ->
-            alwaysSpyF = jasmine.createSpy()
-            doneSpyF = jasmine.createSpy()
-            failSpyF = jasmine.createSpy()
-            
-            deferred = new Greed.Deferred()
-            
-        it "always callbacks should executed on resolve()", ->
-            deferred.always(alwaysSpyF)
-            deferred.resolve()
-            
-            expect(alwaysSpyF).toHaveBeenCalled()
-            return
+            defer = new Greed.Deferred()
+            promise = defer.promise()
         
-        it "always callback should executed of reject()", ->
-            deferred.always(alwaysSpyF)
-            deferred.reject()
-            
-            expect(alwaysSpyF).toHaveBeenCalled()
+        it "should let you create a promise", ->
+            expect(promise).toBeDefined()
             return
             
-        it "always callback and done callback should both executed on resolve", ->
-            deferred.always(alwaysSpyF)
-            deferred.done(doneSpyF)
-            deferred.fail(failSpyF)
+        it "should call any the promise's handler with the arguments to resolveWith()", ->
+            resolved_args = [1, 2, 3]
+            handler_args = undefined
+            spyF = jasmine.createSpy()
             
-            deferred.resolve()
+            promise.then ->
+                spyF()
+                handler_args = Array.prototype.slice.call arguments[0], 0
+                return
+                
+            defer.resolveWith defer, resolved_args
             
-            expect(alwaysSpyF).toHaveBeenCalled()
-            expect(doneSpyF).toHaveBeenCalled()
-            expect(failSpyF).not.toHaveBeenCalled()
-        return
-        
-        it "always callback and fail callback should both executed on reject", ->
-            deferred.always(alwaysSpyF)
-            deferred.done(doneSpyF)
-            deferred.fail(failSpyF)
-            
-            deferred.resolve()
-            
-            expect(alwaysSpyF).toHaveBeenCalled()
-            expect(doneSpyF).not.toHaveBeenCalled()
-            expect(failSpyF).toHaveBeenCalled()
+            expect(spyF).toHaveBeenCalled()
+            expect(handler_args).toEqual resolved_args
         return
     return
+    

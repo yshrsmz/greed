@@ -1,196 +1,230 @@
 # https://github.com/sudhirj/simply-deferred/blob/master/deferred.js
 # https://github.com/wookiehangover/underscore.deferred/blob/master/underscore.deferred.js
+# https://github.com/MarkBennett/future-js/blob/master/future.js
 # TODO integrate with Greed.ajax hoge 
 
 window.Greed = {} unless 'Greed' of window
 
-do (Greed ) ->
+do (Greed) ->
     _g = Greed or {}
-    
-    AP = Array.prototype
-    OP = Object.prototype
-    
-    hasOwn = OP.hasOwnProperty
-    toString = OP.toString
-    forEach = AP.forEach
-    indexOf = AP.indexOf
-    slice = AP.slice
-    isArray = Array.isArray
     
     PENDING = 'pending'
     RESOLVED = 'resolved'
     REJECTED = 'rejected'
     
+    unless Array::forEach
+        throw new Error "Deferred requires Array.forEach"
+        
+    root = this
     
     hasOwn = (obj, prop) -> obj?.hasOwnProperty prop
+    isArguments = (obj) -> hasOwn obj, 'length' and hasOwn obj, 'callee'
     
-    isArguments = (obj) ->  return hasOwn(obj, "length") and hasOwn(obj, "callee")
-
+    isObservable = (obj) ->
+        (obj instanceof Deferred) or (obj instanceof Promise)
+        
     flatten = (array) ->
-        return flatten slice.call(array) if isArguments array
-        return [array] if not isArray array
+        return flatten Array.prototype.slice.call array if isArguments array
+        return [array] if not Array.isArray array
         return array.reduce (memo, value) ->
-            return memo.concat flatten value if isArray value
+            return memo.concat flatten value if Array.isArray value
             memo.push value
             return memo
         , []
         
-    after = (times, func) ->
-        return func() if times <= 0
-        return -> func.apply(@, arguments) if --times < 1
+    #flatten = (args) ->
+        #return [] unless args
+        #args = [args] unless Array.isArray args
+        #flatted = []
+        #args.forEach (item) ->
+            #if item
+                #if typeof item is 'function'
+                    #flatted.push item
+                #else
+                    #args.forEach (fn) ->
+                        #if typeof fn is 'function'
+                            #flatted.push fn
+        #flatted
         
-    wrap = (func, wrapper) ->
-        return ->
-            args = [func].concat slice.call arguments, 0
-            wrapper.apply this, args
+    class Promise
+        _deferred = null
+        
+        constructor: (deferred) ->
+            @_deferred = deferred
             
-    execute = (callbacks, args) -> callback args... for callback in flatten callbacks
+        always: (args...) ->
+            @_deferred.done(args...)
+            this
+        
+        fail: (args...) ->
+            @_deferred.fail(args...)
+            this
+            
+        pipe: (doneFilter, failFilter) ->
+            @_deferred.pipe doneFilter, failFilter
+            
+        state: ->
+            @_deferred.state()
+            
+        then: (done, fail) ->
+            @_deferred.then done, fail
+            this
         
     class Deferred
     
-        _state = PENDING
-        
-        # callbacks that will be executed on success
-        _doneCallbacks = []
-        
-        # callbacks that will be executed on fail
-        _failCallbacks = []
-        
-        # callbacks that will be executeted always
-        _alwaysCallbacks = []
-        
-        _closingArguments = {}
-        
-        _close = (finalState, callbacks) ->
-            return ->
-                if _state is PENDING
-                    _state = finalState
-                    _closingArguments = arguments
-                    execute [callbacks, _alwaysCallbacks], _closingArguments
-                return this
-                
-        
-        constructor: ->
-            @promise this
-            this.when = _when
-            return this
-        
-        resolve: _close RESOLVED, _doneCallbacks
-        
-        reject: _close REJECTED, _failCallbacks
-        
-        resolveWith: (context, args...) ->
-            execute [_doneCallbacks, _alwaysCallbacks], args, context
+        constructor: (fn) ->
+            @_state = PENDING
+            fn.call(this, this) if typeof fn is 'function'
             
-        rejectWith: (context, args...) ->
-            execute [_failCallbacks, _alwaysCallbacks], args, context
-        
-        promise: (candidate) ->
-            candidate = candidate or {}
-            candidate.state = _state
+        always: (args...) =>
+            return this if args.length is 0
+            functions = flatten args
+            if @_state is PENDING
+                @_alwaysCallbacks or= []
+                @_alwaysCallbacks.push(functions...)
+            else
+                functions.forEach (fn) =>
+                    fn.apply @_context, @_withArguments
+            this
             
-            storeCallbacks = (shouldExecuteNow, holder) ->
-                return ->
-                    if _state is PENDING
-                        holder.push flatten arguments...
-                    if shouldExecuteNow 
-                        execute arguments, _closingArguments
-                    return
-                
-            _pipe = (doneFilter, failFilter) ->
-                deferred = new Deferred()
-                _filter = (target, source, filter) ->
-                    if filter
-                        target ->
-                            source filter (flatten arguments)...
+        done: (args...) =>
+            return this if args.length is 0
+            functions = flatten args
+            if @_state is RESOLVED
+                functions.forEach (fn) ->
+                    fn.apply @_context, @_withArguments
+            else if @_state is PENDING
+                @_doneCallbacks or= []
+                @_doneCallbacks.push(functions...)
+            this
+            
+        fail: (args...) =>
+            return this if args.length is 0
+            functions = flatten args
+            if @_state is REJECTED
+                functions.forEach (fn) ->
+                    fn.apply @_context, @_withArguments
+            else if @_state is PENDING
+                @_failCallbacks or= []
+                @_failCallbacks.push(functions...)
+            this
+            
+        notify: (args...) =>
+            @notifyWith(root, args...)
+            this
+            
+        notifyWith: (context, args...) =>
+            return this is @_state is PENDING
+            @_progressCallbacks?.forEach (fn) ->
+                fn.apply context, args
+            this
+            
+        pipe: (doneFilter, failFilter) ->
+            def = new Deferred()
+            @done (args...) ->
+                if doneFilter?
+                    result = doneFilter.apply this, args
+                    if isObservable result
+                        result
+                            .done (doneArgs...) ->
+                                def.resolveWith.call(def, this, doneArgs...)
+                            .fail (failArgs...) ->
+                                def.rejectWith.call(def, this, failArgs...)
                     else
-                        target ->
-                            source (flatten arguments)...
+                        def.resolveWith.call def, this, result
+                else
+                    def.resolveWith.call(def, this, args...)
+                    
+            @fail (args...) ->
+                if failFilter?
+                    result = failFilter.apply this, args
+                    if isObservable result
+                        result
+                            .done (doneArgs...) ->
+                                def.resolveWith.call(def, this, doneArgs...)
+                            .fail (failArgs...) ->
+                                def.rejectWith(def, this, failArgs...)
+                    else
+                        def.rejectWith.call def, this, result
+                    def.rejectWith.call(def, this, args...)
+                else
+                    def.rejectWith.call(def, this, args...)
+                    
+            def.promise()
+        
+        progress: (args...) =>
+            return this if args.length is 0 or @_state isnt PENDING
+            functions = flatten args
+            @_progressCallbacks or= []
+            @_progressCallbacks.push(functions...)
+            this
+        
+        promise: =>
+            @_promise or= new Promise this
+            
+        reject: (args...) =>
+            @rejectWith(root, args...)
+            this
                 
-                _filter candidate.done, deferred.resolve, doneFilter
-                _filter candidate.dail, deferred.reject, failFilter
-                deferred
-        
-            candidate.done = storeCallbacks (_state is RESOLVED), _doneCallbacks
-            candidate.fail = storeCallbacks (_state is REJECTED), _failCallbacks
-            candidate.always = storeCallbacks (_state isnt PENDING), _alwaysCallbacks
-            candidate.pipe = _pipe
-            candidate.then = _pipe
+        rejectWith: (context, args...) =>
+            return this if @_state isnt PENDING
+            @_state = REJECTED
+            @_withArguments = args
+            @_context = context
+            @_failCallbacks?.forEach (fn) =>
+                fn.apply @_context, args
+                
+            @_alwaysCallbacks?.forEach (fn) =>
+                fn.apply @_context, args
+                
+            this
             
-            return candidate
+        resolve: (args...) =>
+            @resolveWith(root, args...)
+            this
+            
+        resolveWith: (context, args...) =>
+            return this if @_state isnt PENDING
+            @_state = RESOLVED
+            @_context = context
+            @_withArguments = args
+            @_doneCallbacks?.forEach  (fn) =>
+                fn.apply @_context, args
+                
+            @_alwaysCallbacks?.forEach (fn) =>
+                fn.apply @_context, args
+                
+            this
+            
+        state: ->
+            @_state
+            
+        then: (doneCallbacks, failCallbacks, progressCallbacks) =>
+            @done doneCallbacks if doneCallbacks
+            @fail failCallbacks if failCallbacks
+            @progress progressCallbacks if progressCallbacks
+            this
     
+    Deferred.when = (args...) ->
+        return new Deferred().resolve().promise() if args.length is 0
+        return args[0].promise() if args.length is 1
+        allReady = new Deferred()
+        readyCount = 0
+        allDoneArgs = []
         
-    _when = ->
-        trigger = new Deferred()
-        defs = flatten arguments
-        finish = after defs.length, trigger.resolve
-        def.done(finish) for def in defs
-        def.fail(trigger.reject()) for def in defs
-        trigger.promise()
+        args.forEach (dfr, idx) ->
+            dfr
+                .done (doneArgs...) ->
+                    readyCount += 1
+                    allDoneArgs[idx] = doneArgs
+                    if readyCount is args.length
+                        allReady.resolve(allDoneArgs...)
+                .fail (failArgs...) ->
+                    allReady.rejectWith(this, failArgs...)
         
-    _g.Deferred = -> new Deferred()
-    _g.Deferred.when = _when
-    _g.when = _when
+        allReady.promise()
+        
+    _g.Deferred = Deferred
+    #_g.Deferred.when = _when
+    #_g.when = _when
     return
-###
-do (Greed) ->
-    _g = Greed
-    class Promise
-        constructor: ->
-            console.log 'Promise constructor'
-            return {
-                when: (func) ->
-                    @vouch @STATUS_FULFILLED, func
-                    return @
-                fail: (func) ->
-                    @vouch @STATUS_SMASHED, func
-                    return @
-                fulfill: (value) ->
-                    @resolve @STATUS_FULFILEED, value
-                    return @
-                smash: (string) ->
-                    @resolve @STATUS_SMASHED, string
-                    return @
-                status: ->
-                    @status
-                promise: ->
-                    return {
-                        when: @when
-                        fail: @fail
-                    }
-            }
-            
-        STATUS_UNRESOLVED: 'unresolved'
-        STATUS_FULFILLED: 'fulfilled'
-        STATUS_SMASHED: 'smashed'
-        status: @STATUS_UNRESOLVED
-        waiting: []
-        dreading: []
-        always: []
-        outcome: undefined
-        vouch: (deed, func) ->
-            switch status
-                when 'unresolved'
-                    (if deed is 'fulfilled' then @waiting else @dreading).push func
-                when deed
-                    func @outcome
-            null
-        resolve: (deed, value) ->
-            if @status isnt 'unresolved'
-                throw new Error "The promise has already been resolved: #{@status}"
-            
-            @status = deed
-            @outcome = value
-            for func in (if deed is @STATUS_FULFILLED then @waiting else @dreading)
-                try
-                    func @outcome
-                catch error
-                    console.log "error: #{error}"
-            
-            @waiting = null
-            @dreading = null
-        
-            return
-        
-    _g.Promise = Promise
-###

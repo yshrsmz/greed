@@ -166,4 +166,82 @@
     });
   });
 
+  describe("_g.extend", function() {
+    var answer, src1, src2, target;
+    target = void 0;
+    src1 = void 0;
+    src2 = void 0;
+    answer = void 0;
+    beforeEach(function() {
+      target = void 0;
+      src1 = void 0;
+      src2 = void 0;
+      return answer = void 0;
+    });
+    it("should merge src into target object", function() {
+      var result;
+      target = {
+        foo: true,
+        bar: '1',
+        hoo: 123,
+        fuga: 'fuga'
+      };
+      src1 = {
+        foo_1: false,
+        bar_1: '2',
+        hoo_1: 456,
+        fuga_1: 'fuga_1'
+      };
+      answer = {
+        foo: true,
+        bar: '1',
+        hoo: 123,
+        fuga: 'fuga',
+        foo_1: false,
+        bar_1: '2',
+        hoo_1: 456,
+        fuga_1: 'fuga_1'
+      };
+      result = _g.extend(target, src1);
+      expect(result).toEqual(answer);
+    });
+    it("should merge multiple src into target, if given", function() {
+      var result;
+      target = {
+        foo: true,
+        bar: '1',
+        hoo: 123,
+        fuga: 'fuga'
+      };
+      src1 = {
+        foo_1: false,
+        bar_1: '2',
+        hoo_1: 456,
+        fuga_1: 'fuga_1'
+      };
+      src2 = {
+        foo_2: false,
+        bar_2: '3',
+        hoo_2: 789,
+        fuga_2: 'fuga_2'
+      };
+      answer = {
+        foo: true,
+        bar: '1',
+        hoo: 123,
+        fuga: 'fuga',
+        foo_1: false,
+        bar_1: '2',
+        hoo_1: 456,
+        fuga_1: 'fuga_1',
+        foo_2: false,
+        bar_2: '3',
+        hoo_2: 789,
+        fuga_2: 'fuga_2'
+      };
+      result = _g.extend(target, src1, src2);
+      expect(result).toEqual(answer);
+    });
+  });
+
 }).call(this);
