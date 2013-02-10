@@ -17,6 +17,25 @@ Greed.is.prototype.TYPE_DATE = "Date"
 Greed.is.prototype.TYPE_ARRAY = "Array"
 Greed.is.prototype.TYPE_OBJECT = "Object"
 Greed.is.prototype.TYPE_NUMBER = "Number"
+Greed.is.prototype.TYPE_BOOLEAN = "Boolean"
+
+Greed.extend = (target, args...) ->
+    target or= {}
+    
+    for arg in args
+        keys = Object.keys arg
+        for key in keys
+            if Greed.is('Object', arg[key]) or Greed.is('Array', arg[key])
+                if not target.hasOwnProperty key
+                    target[key] = if _g.is "Array", arg[key] then [] else {}
+                
+                _g.extend target[key], arg[key]
+            else
+                if not target.hasOwnProperty key
+                    target[key] = arg[key]
+
+    target
+    
 
 ###
 class editing utilities

@@ -189,3 +189,85 @@ describe "_g.toggleClass()", ->
         expect(node.className).toEqual "bar foo"
         
         return
+        
+describe "_g.extend", ->
+    target = undefined
+    src1 = undefined
+    src2 = undefined
+    answer = undefined
+    
+    beforeEach ->
+        target = undefined
+        src1 = undefined
+        src2 = undefined
+        answer = undefined
+        
+    it "should merge src into target object", ->
+        target = 
+            foo: true,
+            bar: '1',
+            hoo: 123,
+            fuga: 'fuga'
+            
+        src1 =
+            foo_1: false,
+            bar_1: '2',
+            hoo_1: 456,
+            fuga_1: 'fuga_1'
+            
+        answer =
+            foo: true,
+            bar: '1',
+            hoo: 123,
+            fuga: 'fuga',
+            foo_1: false,
+            bar_1: '2',
+            hoo_1: 456,
+            fuga_1: 'fuga_1'
+            
+        result = _g.extend target, src1
+        
+        expect(result).toEqual answer
+        
+        return
+        
+    it "should merge multiple src into target, if given", ->
+        target = 
+            foo: true,
+            bar: '1',
+            hoo: 123,
+            fuga: 'fuga'
+            
+        src1 =
+            foo_1: false,
+            bar_1: '2',
+            hoo_1: 456,
+            fuga_1: 'fuga_1'
+            
+        src2 =
+            foo_2: false,
+            bar_2: '3',
+            hoo_2: 789,
+            fuga_2: 'fuga_2'
+            
+        answer =
+            foo: true,
+            bar: '1',
+            hoo: 123,
+            fuga: 'fuga',
+            foo_1: false,
+            bar_1: '2',
+            hoo_1: 456,
+            fuga_1: 'fuga_1',
+            foo_2: false,
+            bar_2: '3',
+            hoo_2: 789,
+            fuga_2: 'fuga_2'
+            
+        result = _g.extend target, src1, src2
+        
+        expect(result).toEqual answer
+        
+        return
+        
+    return
