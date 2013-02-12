@@ -53,6 +53,13 @@
       Promise.prototype.always = function() {
         var args, _ref;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        (_ref = this._deferred).always.apply(_ref, args);
+        return this;
+      };
+
+      Promise.prototype.done = function() {
+        var args, _ref;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         (_ref = this._deferred).done.apply(_ref, args);
         return this;
       };
@@ -132,7 +139,8 @@
       };
 
       Deferred.prototype.done = function() {
-        var args, functions, _ref;
+        var args, functions, _ref,
+          _this = this;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         if (args.length === 0) {
           return this;
@@ -140,7 +148,7 @@
         functions = flatten(args);
         if (this._state === RESOLVED) {
           functions.forEach(function(fn) {
-            return fn.apply(this._context, this._withArguments);
+            return fn.apply(_this._context, _this._withArguments);
           });
         } else if (this._state === PENDING) {
           this._doneCallbacks || (this._doneCallbacks = []);
@@ -150,7 +158,8 @@
       };
 
       Deferred.prototype.fail = function() {
-        var args, functions, _ref;
+        var args, functions, _ref,
+          _this = this;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
         if (args.length === 0) {
           return this;
@@ -158,7 +167,7 @@
         functions = flatten(args);
         if (this._state === REJECTED) {
           functions.forEach(function(fn) {
-            return fn.apply(this._context, this._withArguments);
+            return fn.apply(_this._context, _this._withArguments);
           });
         } else if (this._state === PENDING) {
           this._failCallbacks || (this._failCallbacks = []);

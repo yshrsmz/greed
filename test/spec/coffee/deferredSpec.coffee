@@ -184,7 +184,6 @@ describe "Deferred", ->
         
         context = new Array()
         
-        dfr = new Greed.Deferred()
         dfr.fail (firstArg, secondArg) ->
             expect(firstArg).toEqual 123
             expect(secondArg).toEqual "foo"
@@ -200,7 +199,6 @@ describe "Deferred", ->
         
         context = new Array()
         
-        dfr = new Greed.Deferred()
         dfr.fail (firstArg, secondArg) ->
             expect(firstArg).toEqual 123
             expect(secondArg).toEqual "foo"
@@ -211,6 +209,60 @@ describe "Deferred", ->
         dfr.rejectWith context, 123, "foo"
         
         return
+        
+    it "should fire done with context and arguments after resolving", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        context = new Array()
+        
+        dfr.resolveWith context, 12345
+        dfr.done (firstArg) ->
+            doneSpy()
+            expect(firstArg).toEqual 12345
+            
+        expect(doneSpy).toHaveBeenCalled()
+        
+        return
+    
+    it "should fire fail with context and arguments after rejecting", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        context = new Array()
+        
+        dfr.rejectWith context, 12345
+        dfr.fail (firstArg) ->
+            failSpy()
+            expect(firstArg).toEqual 12345
+            
+        expect(failSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should execute function passed to constructor",  ->
+        constructorSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        passedParam = undefined
+        
+        dfr = new Greed.Deferred (param) ->
+            constructorSpy()
+            passedParam = param
+            expect(param).toEqual @
+            
+            @done doneSpy
+            
+        expect(constructorSpy).toHaveBeenCalled()
+        expect(passedParam).toEqual dfr
+        
+        dfr.resolve()
+        
+        expect(doneSpy).toHaveBeenCalled()
+        
+        return
+            
     
     describe "Deferred.then() behavior", ->
         defer = undefined
@@ -240,4 +292,211 @@ describe "Deferred", ->
             expect(handler_args).toEqual resolved_args
         return
     return
+    
+describe "Promise", ->
+    dfr = undefined
+    
+    beforeEach ->
+        dfr = new Greed.Deferred()
+        
+    it "should be given from deferred", ->
+        promise = dfr.promise()
+        
+        expect(promise.constructor.name).toEqual "Promise"
+        
+        return
+        
+    it "should execute done and always when deferred is resolved", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        promise = dfr.promise()
+        
+        promise
+            .done(doneSpy)
+            .fail(failSpy)
+            .always(alwaysSpy)
+            
+        dfr.resolve()
+        
+        expect(doneSpy).toHaveBeenCalled()
+        expect(failSpy).not.toHaveBeenCalled()
+        expect(alwaysSpy).toHaveBeenCalled()
+        
+        return
+    
+    it "should execute fail and always when deferred is rejected", ->
+        alwaysSpy = jasmine.createSpy()
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        promise = dfr.promise()
+        
+        promise
+            .done(doneSpy)
+            .fail(failSpy)
+            .always(alwaysSpy)
+            
+        dfr.reject()
+        
+        expect(doneSpy).not.toHaveBeenCalled()
+        expect(failSpy).toHaveBeenCalled()
+        expect(alwaysSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should resolve with context", ->
+        doneSpy = jasmine.createSpy()
+        context = new Array()
+        
+        promise = dfr.promise()
+        dfr.resolveWith context, 1234, "foo"
+        promise.done (firstArg, secondArg) ->
+            expect(this).toEqual context
+            expect(firstArg).toEqual 1234
+            expect(secondArg).toEqual "foo"
+            doneSpy()
+            
+        expect(doneSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should reject with context", ->
+        failSpy = jasmine.createSpy()
+        context = new Array()
+        
+        promise = dfr.promise()
+        dfr.rejectWith context, 1234, "foo"
+        promise.fail (firstArg, secondArg) ->
+            expect(this).toEqual context
+            expect(firstArg).toEqual 1234
+            expect(secondArg).toEqual "foo"
+            failSpy()
+            
+        expect(failSpy).toHaveBeenCalled()
+        
+        return
+            
+            
+describe "Deferred.when", ->
+    
+    it "should return a resolved promise object when called without arguments", ->
+        promise = Greed.Deferred.when()
+        
+        expect(promise.constructor.name).toEqual "Promise"
+        expect(promise.state()).toEqual "resolved"
+        
+        return
+        
+    it "should return single deferred's promise", ->
+        dfr = new Greed.Deferred()
+        promise = Greed.Deferred.when dfr
+        
+        expect(promise).toEqual dfr.promise()
+        
+        return
+        
+    it "should resolve when all deferreds are resolved", ->
+        doneSpy = jasmine.createSpy()
+        deferreds = [new Greed.Deferred(), new Greed.Deferred(), new Greed.Deferred()]
+        promise = Greed.Deferred.when(deferreds[0], deferreds[1], deferreds[2])
+        promise.done (args...) ->
+            expect(args).toEqual [[1, 2], [3, 4], [5, 6]]
+            doneSpy()
+            return
+            
+        expect(promise.state()).toEqual "pending"
+        
+        deferreds[1].resolve(3, 4)
+        expect(promise.state()).toEqual "pending"
+        
+        deferreds[0].resolve(1, 2)
+        expect(promise.state()).toEqual "pending"
+        
+        deferreds[2].resolve(5, 6)
+        expect(promise.state()).toEqual "resolved"
+        
+        expect(doneSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should reject when first deferred rejects", ->
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        deferreds = [new Greed.Deferred(), new Greed.Deferred(), new Greed.Deferred()]
+        promise = Greed.Deferred.when(deferreds[0], deferreds[1], deferreds[2])
+        promise.fail (args...) ->
+            expect(args).toEqual [1, 2]
+            failSpy()
+            return
+            
+        promise.done doneSpy
+            
+        expect(promise.state()).toEqual "pending"
+        
+        deferreds[1].resolve(3, 4)
+        expect(promise.state()).toEqual "pending"
+        
+        deferreds[0].reject(1, 2)
+        expect(promise.state()).toEqual "rejected"
+        
+        expect(failSpy).toHaveBeenCalled()
+        expect(doneSpy).not.toHaveBeenCalled()
+        
+        return
+        
+describe "Deferred.pipe", ->
+    dfr = undefined
+    beforeEach ->
+        dfr = new Greed.Deferred()
+        
+    it "should fire normally without parameters when resolved", ->
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        context = new Array()
+        param = "foo"
+        dfr
+            .pipe().done((value) ->
+                expect(value).toEqual param
+                expect(this).toEqual context
+                doneSpy()
+                return
+                )
+                .fail((value) ->
+                    failSpy()
+                    return
+                    )
+        
+        dfr.resolveWith context, param
+        
+        expect(doneSpy).toHaveBeenCalled()
+        expect(failSpy).not.toHaveBeenCalled()
+        
+        return
+        
+    it "should fire normally without parameters when rejected", ->
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        context = new Array()
+        param = "foo"
+        dfr
+            .pipe().done((value) ->
+                doneSpy()
+                return
+                )
+                .fail((value) ->
+                    expect(value).toEqual param
+                    expect(this).toEqual context
+                    failSpy()
+                    return
+                    )
+        
+        dfr.rejectWith context, param
+        
+        expect(doneSpy).not.toHaveBeenCalled()
+        expect(failSpy).toHaveBeenCalled()
+        
+        return
+        
     

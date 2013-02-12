@@ -53,9 +53,13 @@ do (Greed) ->
             @_deferred = deferred
             
         always: (args...) ->
-            @_deferred.done(args...)
+            @_deferred.always(args...)
             this
         
+        done: (args...) ->
+            @_deferred.done(args...)
+            this
+            
         fail: (args...) ->
             @_deferred.fail(args...)
             this
@@ -91,7 +95,7 @@ do (Greed) ->
             return this if args.length is 0
             functions = flatten args
             if @_state is RESOLVED
-                functions.forEach (fn) ->
+                functions.forEach (fn) =>
                     fn.apply @_context, @_withArguments
             else if @_state is PENDING
                 @_doneCallbacks or= []
@@ -102,7 +106,7 @@ do (Greed) ->
             return this if args.length is 0
             functions = flatten args
             if @_state is REJECTED
-                functions.forEach (fn) ->
+                functions.forEach (fn) =>
                     fn.apply @_context, @_withArguments
             else if @_state is PENDING
                 @_failCallbacks or= []
