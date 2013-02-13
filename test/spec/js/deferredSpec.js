@@ -360,7 +360,7 @@
       expect(doneSpy).toHaveBeenCalled();
       expect(failSpy).not.toHaveBeenCalled();
     });
-    return it("should fire normally without parameters when rejected", function() {
+    it("should fire normally without parameters when rejected", function() {
       var context, doneSpy, failSpy, param;
       doneSpy = jasmine.createSpy();
       failSpy = jasmine.createSpy();
@@ -376,6 +376,122 @@
       dfr.rejectWith(context, param);
       expect(doneSpy).not.toHaveBeenCalled();
       expect(failSpy).toHaveBeenCalled();
+    });
+    it("should filter with function (resolve)", function() {
+      var context, doneSpy, failSpy, param1, param2;
+      doneSpy = jasmine.createSpy();
+      failSpy = jasmine.createSpy();
+      param1 = "foo";
+      param2 = "bar";
+      context = new Array();
+      dfr.pipe(function(string1, string2) {
+        expect(string1).toEqual(param1);
+        expect(string2).toEqual(param2);
+        return string1 + string2;
+      }).done(function(value) {
+        expect(value).toEqual(param1 + param2);
+        expect(this).toEqual(context);
+        return doneSpy();
+      }).fail(function(value) {
+        return failSpy();
+      });
+      dfr.resolveWith(context, param1, param2);
+      expect(doneSpy).toHaveBeenCalled();
+      expect(failSpy).not.toHaveBeenCalled();
+    });
+    it("should filter with function (reject)", function() {
+      var context, doneSpy, failSpy, param1, param2;
+      doneSpy = jasmine.createSpy();
+      failSpy = jasmine.createSpy();
+      param1 = "foo";
+      param2 = "bar";
+      context = new Array();
+      dfr.pipe(null, function(string1, string2) {
+        expect(string1).toEqual(param1);
+        expect(string2).toEqual(param2);
+        return string1 + string2;
+      }).done(function(value) {
+        return doneSpy();
+      }).fail(function(value) {
+        expect(value).toEqual(param1 + param2);
+        expect(this).toEqual(context);
+        return failSpy();
+      });
+      dfr.rejectWith(context, param1, param2);
+      expect(doneSpy).not.toHaveBeenCalled();
+      expect(failSpy).toHaveBeenCalled();
+    });
+    it("should filter with another observable (deferred:resolve, pipe:reject)", function() {
+      var context, doneSpy, failSpy, param1, param2, pipeDfr;
+      doneSpy = jasmine.createSpy();
+      failSpy = jasmine.createSpy();
+      param1 = "foo";
+      param2 = "bar";
+      context = new Array();
+      pipeDfr = new Greed.Deferred();
+      dfr.pipe(function(string1, string2) {
+        expect(string1).toEqual(param1);
+        expect(string2).toEqual(param2);
+        return pipeDfr.rejectWith(this, string1, string2).promise();
+      }).fail(function(passed1, passed2) {
+        expect(passed1).toEqual(param1);
+        expect(passed2).toEqual(param2);
+        expect(this).toEqual(context);
+        return failSpy();
+      }).done(doneSpy);
+      dfr.resolveWith(context, param1, param2);
+      expect(doneSpy).not.toHaveBeenCalled();
+      expect(failSpy).toHaveBeenCalled();
+    });
+    return it("should filter with another observable (deferred:reject, pipe:resolve)", function() {
+      var context, doneSpy, failSpy, param1, param2, pipeDfr;
+      doneSpy = jasmine.createSpy();
+      failSpy = jasmine.createSpy();
+      param1 = "foo";
+      param2 = "bar";
+      context = new Array();
+      pipeDfr = new Greed.Deferred();
+      dfr.pipe(null, function(string1, string2) {
+        expect(string1).toEqual(param1);
+        expect(string2).toEqual(param2);
+        return pipeDfr.resolveWith(this, string1, string2);
+      }).fail(failSpy).done(function(passed1, passed2) {
+        expect(passed1).toEqual(param1);
+        expect(passed2).toEqual(param2);
+        expect(this).toEqual(context);
+        return doneSpy();
+      });
+      dfr.rejectWith(context, param1, param2);
+      expect(doneSpy).toHaveBeenCalled();
+      expect(failSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Progress and notify", function() {
+    var dfr;
+    dfr = void 0;
+    beforeEach(function() {
+      return dfr = new Greed.Deferred();
+    });
+    it("should notify with correct context", function() {
+      var context, param1, param2, progressCalled, progressSpy;
+      progressSpy = jasmine.createSpy();
+      param1 = "foo";
+      param2 = "bar";
+      progressCalled = 0;
+      context = new Array();
+      dfr.progress(function(value1, value2) {
+        progressSpy();
+        progressCalled++;
+        expect(value1).toEqual(param1);
+        expect(value2).toEqual(param2);
+        expect(this).toEqual(context);
+      });
+      dfr.notifyWith(context, param1, param2);
+      expect(progressSpy).toHaveBeenCalled();
+      dfr.notifyWith(context, param1, param2);
+      dfr.resolve();
+      dfr.notify();
     });
   });
 

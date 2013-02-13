@@ -184,11 +184,13 @@
       };
 
       Deferred.prototype.notifyWith = function() {
-        var args, context, _ref, _ref1;
+        var args, context, _ref;
         context = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-        return (this === (_ref = this._state) && _ref === PENDING);
-        if ((_ref1 = this._progressCallbacks) != null) {
-          _ref1.forEach(function(fn) {
+        if (this._state !== PENDING) {
+          return this;
+        }
+        if ((_ref = this._progressCallbacks) != null) {
+          _ref.forEach(function(fn) {
             return fn.apply(context, args);
           });
         }

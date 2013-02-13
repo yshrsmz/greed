@@ -118,7 +118,7 @@ do (Greed) ->
             this
             
         notifyWith: (context, args...) =>
-            return this is @_state is PENDING
+            return this if @_state isnt PENDING
             @_progressCallbacks?.forEach (fn) ->
                 fn.apply context, args
             this
@@ -229,6 +229,5 @@ do (Greed) ->
         allReady.promise()
         
     _g.Deferred = Deferred
-    #_g.Deferred.when = _when
-    #_g.when = _when
+    
     return

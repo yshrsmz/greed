@@ -499,4 +499,161 @@ describe "Deferred.pipe", ->
         
         return
         
+    it "should filter with function (resolve)", ->
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        param1 = "foo"
+        param2 = "bar"
+        
+        context = new Array()
+        
+        dfr
+            .pipe((string1, string2) ->
+                expect(string1).toEqual param1
+                expect(string2).toEqual param2
+                
+                string1 + string2
+            ).done((value) ->
+                expect(value).toEqual param1 + param2
+                expect(@).toEqual context
+                doneSpy()
+            ).fail((value) ->
+                failSpy()
+            )
+            
+        dfr.resolveWith context, param1, param2
+        expect(doneSpy).toHaveBeenCalled()
+        expect(failSpy).not.toHaveBeenCalled()
+        
+        return
+        
+    it "should filter with function (reject)", ->
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        param1 = "foo"
+        param2 = "bar"
+        
+        context = new Array()
+        
+        dfr
+            .pipe(null, (string1, string2) ->
+                expect(string1).toEqual param1
+                expect(string2).toEqual param2
+                
+                string1 + string2
+            ).done((value) ->
+                
+                doneSpy()
+            ).fail((value) ->
+                expect(value).toEqual param1 + param2
+                expect(@).toEqual context
+                failSpy()
+            )
+            
+        dfr.rejectWith context, param1, param2
+        expect(doneSpy).not.toHaveBeenCalled()
+        expect(failSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should filter with another observable (deferred:resolve, pipe:reject)", ->
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        param1 = "foo"
+        param2 = "bar"
+        
+        context = new Array()
+        
+        pipeDfr = new Greed.Deferred()
+        
+        dfr.pipe((string1, string2) ->
+                expect(string1).toEqual param1
+                expect(string2).toEqual param2
+                
+                pipeDfr.rejectWith(@, string1, string2).promise()
+            
+            ).fail((passed1, passed2) ->
+                expect(passed1).toEqual param1
+                expect(passed2).toEqual param2
+                expect(@).toEqual context
+                failSpy()
+            ).done(doneSpy)
+            
+        dfr.resolveWith context, param1, param2
+        expect(doneSpy).not.toHaveBeenCalled()
+        expect(failSpy).toHaveBeenCalled()
+        
+        return
+        
+    it "should filter with another observable (deferred:reject, pipe:resolve)", ->
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        
+        param1 = "foo"
+        param2 = "bar"
+        
+        context = new Array()
+        
+        pipeDfr = new Greed.Deferred()
+        
+        dfr.pipe(null,
+            (string1, string2) ->
+                expect(string1).toEqual param1
+                expect(string2).toEqual param2
+                
+                pipeDfr.resolveWith(@, string1, string2)
+            
+            ).fail(failSpy)
+            .done((passed1, passed2) ->
+                expect(passed1).toEqual param1
+                expect(passed2).toEqual param2
+                expect(@).toEqual context
+                doneSpy()
+            )
+            
+        dfr.rejectWith context, param1, param2
+        expect(doneSpy).toHaveBeenCalled()
+        expect(failSpy).not.toHaveBeenCalled()
+        
+        return
+        
+describe "Progress and notify", ->
+    dfr = undefined
     
+    beforeEach ->
+        dfr = new Greed.Deferred()
+        
+    it "should notify with correct context", ->
+        progressSpy = jasmine.createSpy()
+        param1 = "foo"
+        param2 = "bar"
+        progressCalled = 0
+        context = new Array()
+        
+        dfr.progress (value1, value2) ->
+            progressSpy()
+            progressCalled++
+            expect(value1).toEqual param1
+            expect(value2).toEqual param2
+            expect(@).toEqual context
+            return
+            
+        dfr.notifyWith context, param1, param2
+        expect(progressSpy).toHaveBeenCalled()
+        
+        dfr.notifyWith context, param1, param2
+        
+        
+        #expect(progressCalled).toEqual 2
+        
+        dfr.resolve()
+        dfr.notify()
+        
+        #expect(progressCalled).toEqual 2
+        
+        return
+        
+    return
