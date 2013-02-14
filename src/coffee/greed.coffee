@@ -1,4 +1,7 @@
 
+unless 'classList' of document.createElement('a')
+    throw new Error 'Greed requires classList'
+    
 Greed  = ->
     console.log 'greed.js is my personal utility library'
     console.log 'core module '
@@ -19,7 +22,7 @@ Greed.is.prototype.TYPE_OBJECT = "Object"
 Greed.is.prototype.TYPE_NUMBER = "Number"
 Greed.is.prototype.TYPE_BOOLEAN = "Boolean"
 
-Greed.extend = (target, args...) ->
+Greed.fillData = (target, args...) ->
     target or= {}
     
     for arg in args
@@ -29,12 +32,39 @@ Greed.extend = (target, args...) ->
                 if not target.hasOwnProperty key
                     target[key] = if _g.is "Array", arg[key] then [] else {}
                 
-                _g.extend target[key], arg[key]
+                _g.fillData target[key], arg[key]
             else
                 if not target.hasOwnProperty key
                     target[key] = arg[key]
 
     target
+    
+###
+extend prototype
+###
+Greed.extend = (Child, Parent) ->
+    F = ->
+    F:: = Parent::
+    Child:: = new F()
+    Child::constructor = Child
+    Child.uber = Parent::
+    return
+    
+###
+convert object into query string
+###
+Greed.serializeData = (data) ->
+    params = []
+    regexSpace = /%20/g
+    keys = Object.keys data
+    
+    for key in keys
+        value = data[key]
+        param = encodeURIComponent(key).replace(regexSpace, '+') +
+            '=' + encodeURIComponent(value).replace(regexSpace, '+')
+        params.push param
+        return
+    return params.join('&')
     
 
 ###
@@ -83,11 +113,12 @@ Greed.toggleClass = (el, clas) ->
 ###
 image lazy load
 ###
-Greed.lazyLoadImg = ->
-    images = document.querySelectorAll "img[data-lazy-src]"
+Greed.lazyLoadImg = (imgDataAttribute) ->
+    imgDataAttribute or= "data-lazy-src"
+    images = document.querySelectorAll "img[" + imgDataAttribute + "]"
     
     [].forEach.call images, (image) ->
-        image.src = image.getAttribute "data-lazy-src"
+        image.src = image.getAttribute imgDataAttribute
         return
         
     return

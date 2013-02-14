@@ -190,7 +190,7 @@ describe "_g.toggleClass()", ->
         
         return
         
-describe "_g.extend", ->
+describe "_g.fillData", ->
     target = undefined
     src1 = undefined
     src2 = undefined
@@ -225,7 +225,7 @@ describe "_g.extend", ->
             hoo_1: 456,
             fuga_1: 'fuga_1'
             
-        result = _g.extend target, src1
+        result = _g.fillData target, src1
         
         expect(result).toEqual answer
         
@@ -264,7 +264,7 @@ describe "_g.extend", ->
             hoo_2: 789,
             fuga_2: 'fuga_2'
             
-        result = _g.extend target, src1, src2
+        result = _g.fillData target, src1, src2
         
         expect(result).toEqual answer
         

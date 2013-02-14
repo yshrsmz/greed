@@ -108,73 +108,50 @@
 
         this.notify = __bind(this.notify, this);
 
-        this.fail = __bind(this.fail, this);
+        this._storeCallbacks = __bind(this._storeCallbacks, this);
 
-        this.done = __bind(this.done, this);
-
-        this.always = __bind(this.always, this);
+        var _this = this;
         this._state = PENDING;
+        this.always = this._storeCallbacks((function() {
+          return _this._state !== PENDING;
+        }), this._alwaysCallbacks || (this._alwaysCallbacks = []));
+        this.done = this._storeCallbacks((function() {
+          return _this._state === RESOLVED;
+        }), this._doneCallbacks || (this._doneCallbacks = []));
+        this.fail = this._storeCallbacks((function() {
+          return _this._state === REJECTED;
+        }), this._failCallbacks || (this._failCallbacks = []));
         if (typeof fn === 'function') {
           fn.call(this, this);
         }
       }
 
-      Deferred.prototype.always = function() {
-        var args, functions, _ref,
-          _this = this;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (args.length === 0) {
-          return this;
-        }
-        functions = flatten(args);
-        if (this._state === PENDING) {
-          this._alwaysCallbacks || (this._alwaysCallbacks = []);
-          (_ref = this._alwaysCallbacks).push.apply(_ref, functions);
-        } else {
-          functions.forEach(function(fn) {
-            return fn.apply(_this._context, _this._withArguments);
-          });
-        }
-        return this;
+      Deferred.prototype._storeCallbacks = function(shouldExecuteNow, holder) {
+        var _this = this;
+        return function() {
+          var args, functions;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          if (args.length === 0) {
+            return _this;
+          }
+          functions = flatten(args);
+          if (_this._state === PENDING) {
+            holder.push.apply(holder, functions);
+          }
+          if (shouldExecuteNow()) {
+            functions.forEach(function(fn) {
+              return fn.apply(_this._context, _this._withArguments);
+            });
+          }
+          return _this;
+        };
       };
 
-      Deferred.prototype.done = function() {
-        var args, functions, _ref,
-          _this = this;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (args.length === 0) {
-          return this;
-        }
-        functions = flatten(args);
-        if (this._state === RESOLVED) {
-          functions.forEach(function(fn) {
-            return fn.apply(_this._context, _this._withArguments);
-          });
-        } else if (this._state === PENDING) {
-          this._doneCallbacks || (this._doneCallbacks = []);
-          (_ref = this._doneCallbacks).push.apply(_ref, functions);
-        }
-        return this;
-      };
+      Deferred.prototype.always = void 0;
 
-      Deferred.prototype.fail = function() {
-        var args, functions, _ref,
-          _this = this;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        if (args.length === 0) {
-          return this;
-        }
-        functions = flatten(args);
-        if (this._state === REJECTED) {
-          functions.forEach(function(fn) {
-            return fn.apply(_this._context, _this._withArguments);
-          });
-        } else if (this._state === PENDING) {
-          this._failCallbacks || (this._failCallbacks = []);
-          (_ref = this._failCallbacks).push.apply(_ref, functions);
-        }
-        return this;
-      };
+      Deferred.prototype.done = void 0;
+
+      Deferred.prototype.fail = void 0;
 
       Deferred.prototype.notify = function() {
         var args;

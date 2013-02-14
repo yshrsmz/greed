@@ -1,7 +1,7 @@
 # https://github.com/sudhirj/simply-deferred/blob/master/deferred.js
 # https://github.com/wookiehangover/underscore.deferred/blob/master/underscore.deferred.js
 # https://github.com/MarkBennett/future-js/blob/master/future.js
-# TODO integrate with Greed.ajax hoge 
+# TODO integrate with Greed.ajax
 
 window.Greed = {} unless 'Greed' of window
 
@@ -32,20 +32,6 @@ do (Greed) ->
             return memo
         , []
         
-    #flatten = (args) ->
-        #return [] unless args
-        #args = [args] unless Array.isArray args
-        #flatted = []
-        #args.forEach (item) ->
-            #if item
-                #if typeof item is 'function'
-                    #flatted.push item
-                #else
-                    #args.forEach (fn) ->
-                        #if typeof fn is 'function'
-                            #flatted.push fn
-        #flatted
-        
     class Promise
         _deferred = null
         
@@ -75,43 +61,62 @@ do (Greed) ->
             this
         
     class Deferred
-    
+                
         constructor: (fn) ->
             @_state = PENDING
+            @always = @_storeCallbacks (=> @_state isnt PENDING), @_alwaysCallbacks or= []
+            @done = @_storeCallbacks (=> @_state is RESOLVED), @_doneCallbacks or= []
+            @fail = @_storeCallbacks (=> @_state is REJECTED), @_failCallbacks or= []
+            
             fn.call(this, this) if typeof fn is 'function'
             
-        always: (args...) =>
-            return this if args.length is 0
-            functions = flatten args
-            if @_state is PENDING
-                @_alwaysCallbacks or= []
-                @_alwaysCallbacks.push(functions...)
-            else
-                functions.forEach (fn) =>
-                    fn.apply @_context, @_withArguments
-            this
+        _storeCallbacks: (shouldExecuteNow, holder) =>
+            return (args...) =>
+                return this if args.length is 0
+                functions = flatten args
+                if @_state is PENDING then holder.push functions...
+                
+                if shouldExecuteNow()
+                    functions.forEach (fn) =>
+                        fn.apply @_context, @_withArguments
+                this
+        
+        always: undefined   #define in the constructor
+        done: undefined     #define in the constructor
+        fail: undefined     #define in the constructor
             
-        done: (args...) =>
-            return this if args.length is 0
-            functions = flatten args
-            if @_state is RESOLVED
-                functions.forEach (fn) =>
-                    fn.apply @_context, @_withArguments
-            else if @_state is PENDING
-                @_doneCallbacks or= []
-                @_doneCallbacks.push(functions...)
-            this
-            
-        fail: (args...) =>
-            return this if args.length is 0
-            functions = flatten args
-            if @_state is REJECTED
-                functions.forEach (fn) =>
-                    fn.apply @_context, @_withArguments
-            else if @_state is PENDING
-                @_failCallbacks or= []
-                @_failCallbacks.push(functions...)
-            this
+        #always: (args...) =>
+            #return this if args.length is 0
+            #functions = flatten args
+            #if @_state is PENDING
+                #@_alwaysCallbacks or= []
+                #@_alwaysCallbacks.push(functions...)
+            #else
+                #functions.forEach (fn) =>
+                    #fn.apply @_context, @_withArguments
+            #this
+            #
+        #done: (args...) =>
+            #return this if args.length is 0
+            #functions = flatten args
+            #if @_state is RESOLVED
+                #functions.forEach (fn) =>
+                    #fn.apply @_context, @_withArguments
+            #else if @_state is PENDING
+                #@_doneCallbacks or= []
+                #@_doneCallbacks.push(functions...)
+            #this
+            #
+        #fail: (args...) =>
+            #return this if args.length is 0
+            #functions = flatten args
+            #if @_state is REJECTED
+                #functions.forEach (fn) =>
+                    #fn.apply @_context, @_withArguments
+            #else if @_state is PENDING
+                #@_failCallbacks or= []
+                #@_failCallbacks.push(functions...)
+            #this
             
         notify: (args...) =>
             @notifyWith(root, args...)

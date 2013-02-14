@@ -3,6 +3,10 @@
   var Greed,
     __slice = [].slice;
 
+  if (!('classList' in document.createElement('a'))) {
+    throw new Error('Greed requires classList');
+  }
+
   Greed = function() {
     console.log('greed.js is my personal utility library');
     console.log('core module ');
@@ -33,7 +37,7 @@
 
   Greed.is.prototype.TYPE_BOOLEAN = "Boolean";
 
-  Greed.extend = function() {
+  Greed.fillData = function() {
     var arg, args, key, keys, target, _i, _j, _len, _len1;
     target = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     target || (target = {});
@@ -46,7 +50,7 @@
           if (!target.hasOwnProperty(key)) {
             target[key] = _g.is("Array", arg[key]) ? [] : {};
           }
-          _g.extend(target[key], arg[key]);
+          _g.fillData(target[key], arg[key]);
         } else {
           if (!target.hasOwnProperty(key)) {
             target[key] = arg[key];
@@ -55,6 +59,40 @@
       }
     }
     return target;
+  };
+
+  /*
+  extend prototype
+  */
+
+
+  Greed.extend = function(Child, Parent) {
+    var F;
+    F = function() {};
+    F.prototype = Parent.prototype;
+    Child.prototype = new F();
+    Child.prototype.constructor = Child;
+    Child.uber = Parent.prototype;
+  };
+
+  /*
+  convert object into query string
+  */
+
+
+  Greed.serializeData = function(data) {
+    var key, keys, param, params, regexSpace, value, _i, _len;
+    params = [];
+    regexSpace = /%20/g;
+    keys = Object.keys(data);
+    for (_i = 0, _len = keys.length; _i < _len; _i++) {
+      key = keys[_i];
+      value = data[key];
+      param = encodeURIComponent(key).replace(regexSpace, '+') + '=' + encodeURIComponent(value).replace(regexSpace, '+');
+      params.push(param);
+      return;
+    }
+    return params.join('&');
   };
 
   /*
@@ -129,11 +167,12 @@
   */
 
 
-  Greed.lazyLoadImg = function() {
+  Greed.lazyLoadImg = function(imgDataAttribute) {
     var images;
-    images = document.querySelectorAll("img[data-lazy-src]");
+    imgDataAttribute || (imgDataAttribute = "data-lazy-src");
+    images = document.querySelectorAll("img[" + imgDataAttribute + "]");
     [].forEach.call(images, function(image) {
-      image.src = image.getAttribute("data-lazy-src");
+      image.src = image.getAttribute(imgDataAttribute);
     });
   };
 
