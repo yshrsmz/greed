@@ -72,7 +72,7 @@
     return it("should return pending Promise object, when called with url or parameter object", function() {
       var promise, serverResponse;
       serverResponse = null;
-      promise = _g.ajax('/test/data/ajax_test.json');
+      promise = _g.ajax('http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1');
       expect(promise.constructor.name).toEqual("Promise");
       promise.done(function(res) {
         doneSpy();
