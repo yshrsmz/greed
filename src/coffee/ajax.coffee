@@ -20,6 +20,7 @@ do (Greed) ->
             @options = options
             @_deferred = new _g.Deferred()
             @responseReceived = false
+            @xhrTimeout = null
             
             if @_check()
                 @_send()
@@ -41,12 +42,15 @@ do (Greed) ->
             success: null
             error: null
             complete: null
+            onTimeout: null
             timeoutDuration: 60 * 1000
             accepts: 
                 text: 'text/plain'
                 html: 'text/html'
                 xml: 'application/xml, text/xml'
                 json: 'application/json, text/javascript'
+        
+        _emptyFunc: ->
             
         _send: ->
             opts = @options
@@ -79,6 +83,9 @@ do (Greed) ->
             if _g.is 'Function', opts.complete
                 @_deferred.always opts.complete
                 
+            if opts.timeoutDuration and _g.is 'Number', opts.timeoutDuration
+                @xhrTimeout = setTimeout @onAjaxTimeout(), opts.timeoutDuration
+            
             if opts.async
                 @xhr.onreadystatechange = @_onReadyStateChange
                 @xhr.send opts.data
@@ -109,6 +116,7 @@ do (Greed) ->
             
             if @xhr.readyState is 4 and not @responseReceived
                 @responseReceived = true
+                if @xhrTimeout then clearTimeout @xhrTimeout
                 
                 if @xhr.status >= 200 && @xhr.status < 300 || @xhr.status is 304
                     data = if opts.dataType is 'xml' then @xhr.responseXML else @xhr.responseText
@@ -133,6 +141,13 @@ do (Greed) ->
                 _g.activeAjaxCount--
             return
             
+        _onAjaxTimeout: =>
+            @xhr.onreadystatechange = @_emptyFunc
+            @xhr.abort()
+            
+            _g.activeAjaxCount--
+            if _g.is('Function', @options.onTimeout) then @options.onTimeout()
+            return
     
     _g.ajax = (url, options) ->
         # return promise object for callback
