@@ -18,12 +18,15 @@
     AjaxCore = (function() {
 
       function AjaxCore(url, options) {
+        this._onAjaxTimeout = __bind(this._onAjaxTimeout, this);
+
         this._onReadyStateChange = __bind(this._onReadyStateChange, this);
         this.xhr = new XMLHttpRequest();
         this.url = url;
         this.options = options;
         this._deferred = new _g.Deferred();
         this.responseReceived = false;
+        this.xhrTimeout = null;
         if (this._check()) {
           this._send();
         } else {
@@ -43,6 +46,7 @@
         success: null,
         error: null,
         complete: null,
+        onTimeout: null,
         timeoutDuration: 60 * 1000,
         accepts: {
           text: 'text/plain',
@@ -51,6 +55,8 @@
           json: 'application/json, text/javascript'
         }
       };
+
+      AjaxCore.prototype._emptyFunc = function() {};
 
       AjaxCore.prototype._send = function() {
         var opts;
@@ -81,6 +87,9 @@
         if (_g.is('Function', opts.complete)) {
           this._deferred.always(opts.complete);
         }
+        if (opts.timeoutDuration && _g.is('Number', opts.timeoutDuration)) {
+          this.xhrTimeout = setTimeout(this._onAjaxTimeout, opts.timeoutDuration);
+        }
         if (opts.async) {
           this.xhr.onreadystatechange = this._onReadyStateChange;
           this.xhr.send(opts.data);
@@ -109,6 +118,9 @@
         data = null;
         if (this.xhr.readyState === 4 && !this.responseReceived) {
           this.responseReceived = true;
+          if (this.xhrTimeout) {
+            clearTimeout(this.xhrTimeout);
+          }
           if (this.xhr.status >= 200 && this.xhr.status < 300 || this.xhr.status === 304) {
             data = opts.dataType === 'xml' ? this.xhr.responseXML : this.xhr.responseText;
             if (opts.dataType === 'json') {
@@ -119,6 +131,15 @@
             this._deferred.rejectWith(this, data, this.xhr, this.xhr.status);
           }
           _g.activeAjaxCount--;
+        }
+      };
+
+      AjaxCore.prototype._onAjaxTimeout = function() {
+        this.xhr.onreadystatechange = this._emptyFunc;
+        this.xhr.abort();
+        _g.activeAjaxCount--;
+        if (_g.is('Function', this.options.onTimeout)) {
+          this.options.onTimeout();
         }
       };
 

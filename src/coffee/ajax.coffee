@@ -84,7 +84,7 @@ do (Greed) ->
                 @_deferred.always opts.complete
                 
             if opts.timeoutDuration and _g.is 'Number', opts.timeoutDuration
-                @xhrTimeout = setTimeout @onAjaxTimeout(), opts.timeoutDuration
+                @xhrTimeout = setTimeout @_onAjaxTimeout, opts.timeoutDuration
             
             if opts.async
                 @xhr.onreadystatechange = @_onReadyStateChange
