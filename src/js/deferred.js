@@ -88,6 +88,25 @@
 
     })();
     Deferred = (function() {
+      var _storeCallback;
+
+      _storeCallback = function(shouldExecuteNow, holder, args) {
+        var functions,
+          _this = this;
+        if (args.length === 0) {
+          return this;
+        }
+        functions = flatten(args);
+        if (this._state === PENDING) {
+          holder.push.apply(holder, functions);
+        }
+        if (shouldExecuteNow()) {
+          functions.forEach(function(fn) {
+            return fn.apply(_this._context, _this._withArguments);
+          });
+        }
+        return this;
+      };
 
       function Deferred(fn) {
         this.then = __bind(this.then, this);
@@ -108,50 +127,46 @@
 
         this.notify = __bind(this.notify, this);
 
-        this._storeCallbacks = __bind(this._storeCallbacks, this);
+        this.fail = __bind(this.fail, this);
 
-        var _this = this;
+        this.done = __bind(this.done, this);
+
+        this.always = __bind(this.always, this);
         this._state = PENDING;
-        this.always = this._storeCallbacks((function() {
-          return _this._state !== PENDING;
-        }), this._alwaysCallbacks || (this._alwaysCallbacks = []));
-        this.done = this._storeCallbacks((function() {
-          return _this._state === RESOLVED;
-        }), this._doneCallbacks || (this._doneCallbacks = []));
-        this.fail = this._storeCallbacks((function() {
-          return _this._state === REJECTED;
-        }), this._failCallbacks || (this._failCallbacks = []));
         if (typeof fn === 'function') {
           fn.call(this, this);
         }
       }
 
-      Deferred.prototype._storeCallbacks = function(shouldExecuteNow, holder) {
-        var _this = this;
-        return function() {
-          var args, functions;
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          if (args.length === 0) {
-            return _this;
-          }
-          functions = flatten(args);
-          if (_this._state === PENDING) {
-            holder.push.apply(holder, functions);
-          }
-          if (shouldExecuteNow()) {
-            functions.forEach(function(fn) {
-              return fn.apply(_this._context, _this._withArguments);
-            });
-          }
-          return _this;
-        };
+      Deferred.prototype.always = function() {
+        var args,
+          _this = this;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        _storeCallback.call(this, (function() {
+          return _this._state !== PENDING;
+        }), this._alwaysCallbacks || (this._alwaysCallbacks = []), args);
+        return this;
       };
 
-      Deferred.prototype.always = void 0;
+      Deferred.prototype.done = function() {
+        var args,
+          _this = this;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        _storeCallback.call(this, (function() {
+          return _this._state === RESOLVED;
+        }), this._doneCallbacks || (this._doneCallbacks = []), args);
+        return this;
+      };
 
-      Deferred.prototype.done = void 0;
-
-      Deferred.prototype.fail = void 0;
+      Deferred.prototype.fail = function() {
+        var args,
+          _this = this;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        _storeCallback.call(this, (function() {
+          return _this._state === REJECTED;
+        }), this._failCallbacks || (this._failCallbacks = []), args);
+        return this;
+      };
 
       Deferred.prototype.notify = function() {
         var args;

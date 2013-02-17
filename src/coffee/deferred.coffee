@@ -62,61 +62,51 @@ do (Greed) ->
         
     class Deferred
                 
+        _storeCallback = (shouldExecuteNow, holder, args) ->
+            return this if args.length is 0
+            functions = flatten args
+            if @_state is PENDING then holder.push functions...
+            
+            if shouldExecuteNow()
+                functions.forEach (fn) =>
+                    fn.apply @_context, @_withArguments
+            this
+            
         constructor: (fn) ->
             @_state = PENDING
-            @always = @_storeCallbacks (=> @_state isnt PENDING), @_alwaysCallbacks or= []
-            @done = @_storeCallbacks (=> @_state is RESOLVED), @_doneCallbacks or= []
-            @fail = @_storeCallbacks (=> @_state is REJECTED), @_failCallbacks or= []
+            #@always = @_storeCallbacks (=> @_state isnt PENDING), @_alwaysCallbacks or= []
+            #@done = @_storeCallbacks (=> @_state is RESOLVED), @_doneCallbacks or= []
+            #@fail = @_storeCallbacks (=> @_state is REJECTED), @_failCallbacks or= []
             
             fn.call(this, this) if typeof fn is 'function'
             
-        _storeCallbacks: (shouldExecuteNow, holder) =>
-            return (args...) =>
-                return this if args.length is 0
-                functions = flatten args
-                if @_state is PENDING then holder.push functions...
+        #_storeCallbacks: (shouldExecuteNow, holder) =>
+            #return (args...) =>
+                #return this if args.length is 0
+                #functions = flatten args
+                #if @_state is PENDING then holder.push functions...
+                #
+                #if shouldExecuteNow()
+                    #functions.forEach (fn) =>
+                        #fn.apply @_context, @_withArguments
+                #this
                 
-                if shouldExecuteNow()
-                    functions.forEach (fn) =>
-                        fn.apply @_context, @_withArguments
-                this
-        
-        always: undefined   #define in the constructor
-        done: undefined     #define in the constructor
-        fail: undefined     #define in the constructor
+        always: (args...) =>
+            _storeCallback.call @, (=> @_state isnt PENDING), @_alwaysCallbacks or= [], args
+            @
             
-        #always: (args...) =>
-            #return this if args.length is 0
-            #functions = flatten args
-            #if @_state is PENDING
-                #@_alwaysCallbacks or= []
-                #@_alwaysCallbacks.push(functions...)
-            #else
-                #functions.forEach (fn) =>
-                    #fn.apply @_context, @_withArguments
-            #this
-            #
-        #done: (args...) =>
-            #return this if args.length is 0
-            #functions = flatten args
-            #if @_state is RESOLVED
-                #functions.forEach (fn) =>
-                    #fn.apply @_context, @_withArguments
-            #else if @_state is PENDING
-                #@_doneCallbacks or= []
-                #@_doneCallbacks.push(functions...)
-            #this
-            #
-        #fail: (args...) =>
-            #return this if args.length is 0
-            #functions = flatten args
-            #if @_state is REJECTED
-                #functions.forEach (fn) =>
-                    #fn.apply @_context, @_withArguments
-            #else if @_state is PENDING
-                #@_failCallbacks or= []
-                #@_failCallbacks.push(functions...)
-            #this
+        done: (args...) =>
+            _storeCallback.call @, (=> @_state is RESOLVED), @_doneCallbacks or= [], args
+            @
+            
+        fail: (args...) =>
+            _storeCallback.call @, (=> @_state is REJECTED), @_failCallbacks or= [], args
+            @
+            
+        
+        #always: undefined   #define in the constructor
+        #done: undefined     #define in the constructor
+        #fail: undefined     #define in the constructor
             
         notify: (args...) =>
             @notifyWith(root, args...)
