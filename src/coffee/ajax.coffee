@@ -133,7 +133,7 @@ do (Greed) ->
                     #if _g.is 'Function', opts.error
                         #opts.error.call opts, @xhr, @xhr.status
                         
-                    @_deferred.rejectWith @, data, @xhr, @xhr.status
+                    @_deferred.rejectWith @, data, @xhr.status, @xhr
                 
                 #if _g.is 'Function', opts.complete
                     #opts.complete.call opts, data, @xhr, @xhr.status

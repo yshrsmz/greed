@@ -50,17 +50,11 @@
   });
 
   describe("ajax", function() {
-    var alwaysSpy, doneSpy, failSpy;
-    doneSpy = void 0;
-    failSpy = void 0;
-    alwaysSpy = void 0;
-    beforeEach(function() {
+    it("should return rejected Promise object, when called without arguments", function() {
+      var alwaysSpy, doneSpy, failSpy, promise;
       doneSpy = jasmine.createSpy();
       failSpy = jasmine.createSpy();
-      return alwaysSpy = jasmine.createSpy();
-    });
-    it("should return rejected Promise object, when called without arguments", function() {
-      var promise;
+      alwaysSpy = jasmine.createSpy();
       promise = _g.ajax();
       promise.done(doneSpy).fail(failSpy).always(alwaysSpy);
       expect(promise.constructor.name).toEqual("Promise");
@@ -69,9 +63,12 @@
       expect(failSpy).toHaveBeenCalled();
       expect(alwaysSpy).toHaveBeenCalled();
     });
-    return it("should return pending Promise object, when called with url or parameter object", function() {
-      var promise, serverResponse;
+    it("should return pending Promise object, when called with url or parameter object", function() {
+      var alwaysSpy, doneSpy, failSpy, promise, serverResponse;
       serverResponse = null;
+      doneSpy = jasmine.createSpy();
+      failSpy = jasmine.createSpy();
+      alwaysSpy = jasmine.createSpy();
       promise = _g.ajax('http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1');
       expect(promise.constructor.name).toEqual("Promise");
       promise.done(function(res) {
@@ -84,7 +81,104 @@
       runs(function() {
         expect(doneSpy).toHaveBeenCalled();
         expect(failSpy).not.toHaveBeenCalled();
-        return expect(alwaysSpy).toHaveBeenCalled();
+        expect(alwaysSpy).toHaveBeenCalled();
+        return expect(promise.state()).toEqual("resolved");
+      });
+    });
+    it("should process normally, if callbacks are given as arguments", function() {
+      var alwaysSpy, doneSpy, failSpy, isCompleted, promise, serverResponse, url;
+      serverResponse = null;
+      promise = void 0;
+      isCompleted = false;
+      doneSpy = jasmine.createSpy();
+      failSpy = jasmine.createSpy();
+      alwaysSpy = jasmine.createSpy();
+      url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1';
+      runs(function() {
+        return promise = _g.ajax(url, {
+          success: function(data) {
+            doneSpy();
+            serverResponse = data;
+            isCompleted = true;
+          },
+          error: failSpy,
+          complete: alwaysSpy
+        });
+      });
+      waitsFor(function() {
+        return !!serverResponse;
+      }, 'get server response', 2000);
+      runs(function() {
+        expect(doneSpy).toHaveBeenCalled();
+        expect(failSpy).not.toHaveBeenCalled();
+        expect(alwaysSpy).toHaveBeenCalled();
+        return expect(promise.state()).toEqual('resolved');
+      });
+    });
+    return it("should call onTimeout funciton, when ajax call timed out", function() {
+      var alwaysSpy, doneSpy, failSpy, isCompleted, promise, serverResponse, timeoutSpy, url;
+      serverResponse = null;
+      promise = void 0;
+      isCompleted = false;
+      promise = void 0;
+      url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=yshrsmzajax-yoshimurasei.dotcloud.com/ajax-test';
+      doneSpy = jasmine.createSpy();
+      failSpy = jasmine.createSpy();
+      alwaysSpy = jasmine.createSpy();
+      timeoutSpy = jasmine.createSpy();
+      runs(function() {
+        promise = _g.ajax(url, {
+          onTimeout: function() {
+            timeoutSpy();
+            isCompleted = true;
+          },
+          timeoutDuration: 1000
+        }).done(doneSpy).fail(failSpy).always(alwaysSpy);
+      });
+      waitsFor(function() {
+        return isCompleted;
+      }, 'request does not timed out', 2000);
+      runs(function() {
+        expect(doneSpy).not.toHaveBeenCalled();
+        expect(failSpy).not.toHaveBeenCalled();
+        expect(alwaysSpy).not.toHaveBeenCalled();
+        return expect(timeoutSpy).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("ajaxJson", function() {
+    it("should return response as Object", function() {
+      var alwaysSpy, doneSpy, failSpy, isCompleted, promise, serverResponse, url;
+      serverResponse = null;
+      isCompleted = false;
+      promise = void 0;
+      url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1';
+      doneSpy = void 0;
+      failSpy = void 0;
+      alwaysSpy = void 0;
+      doneSpy = jasmine.createSpy();
+      failSpy = jasmine.createSpy();
+      alwaysSpy = jasmine.createSpy();
+      runs(function() {
+        promise = _g.ajaxJson(url);
+        expect(promise.constructor.name).toEqual('Promise');
+        return promise.done(function(data) {
+          console.log(data);
+          doneSpy();
+          expect(_g.is('Object', data)).toBeTruthy();
+          serverResponse = data;
+          isCompleted = true;
+        }).fail(failSpy).always(alwaysSpy);
+      });
+      waitsFor(function() {
+        return isCompleted;
+      }, 'get server response', 2000);
+      runs(function() {
+        expect(doneSpy).toHaveBeenCalled();
+        expect(failSpy).not.toHaveBeenCalled();
+        expect(alwaysSpy).toHaveBeenCalled();
+        return expect(promise.state()).toEqual('resolved');
       });
     });
   });

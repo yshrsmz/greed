@@ -128,7 +128,7 @@
             }
             this._deferred.resolveWith(this, data, this.xhr.status, this.xhr);
           } else {
-            this._deferred.rejectWith(this, data, this.xhr, this.xhr.status);
+            this._deferred.rejectWith(this, data, this.xhr.status, this.xhr);
           }
           _g.activeAjaxCount--;
         }

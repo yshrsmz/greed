@@ -57,16 +57,11 @@ describe "ajaxSettings", ->
     return
 
 describe "ajax", ->
-    doneSpy = undefined
-    failSpy = undefined
-    alwaysSpy = undefined
-    
-    beforeEach ->
+            
+    it "should return rejected Promise object, when called without arguments", ->
         doneSpy = jasmine.createSpy()
         failSpy = jasmine.createSpy()
         alwaysSpy = jasmine.createSpy()
-    
-    it "should return rejected Promise object, when called without arguments", ->
         
         promise = _g.ajax()
         
@@ -85,7 +80,12 @@ describe "ajax", ->
         return
         
     it "should return pending Promise object, when called with url or parameter object", ->
+        
+        
         serverResponse = null
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        alwaysSpy = jasmine.createSpy()
         
         promise = _g.ajax('http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1')
         
@@ -98,8 +98,38 @@ describe "ajax", ->
             ).fail(failSpy)
             .always(alwaysSpy)
         
+        waitsFor(->
+            not not serverResponse
+        , 'get server response', 2000)
         
-        #expect(promise.state()).toEqual "rejected"
+        runs(->
+            expect(doneSpy).toHaveBeenCalled()
+            expect(failSpy).not.toHaveBeenCalled()
+            expect(alwaysSpy).toHaveBeenCalled()
+            expect(promise.state()).toEqual "resolved"
+        )
+        
+        return
+        
+    it "should process normally, if callbacks are given as arguments", ->
+        serverResponse = null
+        promise = undefined
+        isCompleted = false
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        alwaysSpy = jasmine.createSpy()
+        url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1'
+        runs( ->
+            promise = _g.ajax(url, {
+                    success: (data) ->
+                        doneSpy()
+                        serverResponse = data
+                        isCompleted = true
+                        return
+                    error: failSpy
+                    complete: alwaysSpy
+                })
+        )
         
         waitsFor(->
             not not serverResponse
@@ -109,6 +139,87 @@ describe "ajax", ->
             expect(doneSpy).toHaveBeenCalled()
             expect(failSpy).not.toHaveBeenCalled()
             expect(alwaysSpy).toHaveBeenCalled()
+            expect(promise.state()).toEqual 'resolved'
         )
         
         return
+        
+    it "should call onTimeout funciton, when ajax call timed out", ->
+        serverResponse = null
+        promise = undefined
+        isCompleted = false
+        promise = undefined
+        url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=yshrsmzajax-yoshimurasei.dotcloud.com/ajax-test'
+        
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        alwaysSpy = jasmine.createSpy()
+        timeoutSpy = jasmine.createSpy()
+        
+        runs( ->
+            promise = _g.ajax(url, {
+                    onTimeout: ->
+                        timeoutSpy()
+                        isCompleted = true
+                        return
+                    timeoutDuration: 1000
+                }).done(doneSpy).fail(failSpy).always(alwaysSpy)
+            return
+        )
+            
+        waitsFor ->
+            isCompleted
+        , 'request does not timed out', 2000
+        
+        runs( ->
+            expect(doneSpy).not.toHaveBeenCalled()
+            expect(failSpy).not.toHaveBeenCalled()
+            expect(alwaysSpy).not.toHaveBeenCalled()
+            expect(timeoutSpy).toHaveBeenCalled()
+        )
+        
+        return
+        
+describe "ajaxJson", ->
+    
+    it "should return response as Object", ->
+        
+        serverResponse = null
+        isCompleted = false
+        promise = undefined
+        url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1'
+        doneSpy = undefined
+        failSpy = undefined
+        alwaysSpy = undefined
+        
+        doneSpy = jasmine.createSpy()
+        failSpy = jasmine.createSpy()
+        alwaysSpy = jasmine.createSpy()
+        runs( ->
+            promise = _g.ajaxJson(url)
+            
+            expect(promise.constructor.name).toEqual 'Promise'
+        
+            promise.done( (data) ->
+                console.log(data)
+                doneSpy()
+                expect(_g.is('Object', data)).toBeTruthy()
+                serverResponse = data
+                isCompleted = true
+                return
+            ).fail(failSpy).always(alwaysSpy)
+        )
+        
+        waitsFor(->
+            isCompleted
+        , 'get server response', 2000)
+        
+        runs( ->
+            expect(doneSpy).toHaveBeenCalled()
+            expect(failSpy).not.toHaveBeenCalled()
+            expect(alwaysSpy).toHaveBeenCalled()
+            expect(promise.state()).toEqual 'resolved'
+        )
+        
+        return
+    return
