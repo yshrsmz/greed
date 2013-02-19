@@ -8,13 +8,13 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "grunt": "git://github.com/gruntjs/grunt.git#master",
-    "grunt-exec": "git://github.com/jharding/grunt-exec.git#grunt0.4rc",
-    "grunt-contrib-coffee": "~0.4.0rc7",
+    "grunt": "~0.4.0",
+    "grunt-exec": "~0.4.0",
+    "grunt-contrib-coffee": "~0.4.0",
     "ejs": "~0.8.3",
-    "grunt-contrib-watch": "git://github.com/gruntjs/grunt-contrib-watch.git#master",
+    "grunt-contrib-watch": "~0.2.0",
     "grunt-buster": "~0.1.2",
-    "grunt-contrib-jasmine": "~0.3.1rc7"
+    "grunt-contrib-jasmine": "~0.3.2"
   },
   "otherDependencies": {
     "buster": "npm install -g buster"
