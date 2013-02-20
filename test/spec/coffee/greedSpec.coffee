@@ -1,3 +1,5 @@
+
+
 describe "Greed", ->
     it "should exist as global variable", ->
         expect("Greed" of window).toBe true

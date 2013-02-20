@@ -2,10 +2,10 @@
 unless 'classList' of document.createElement('a')
     throw new Error 'Greed requires classList'
     
-Greed  = ->
-    console.log 'greed.js is my personal utility library'
-    console.log 'core module '
-    return
+if not ('Greed' of window)
+    Greed  = {}
+    
+_g = Greed
     
 ###
 determne type of given object
@@ -21,6 +21,7 @@ Greed.is.prototype.TYPE_ARRAY = "Array"
 Greed.is.prototype.TYPE_OBJECT = "Object"
 Greed.is.prototype.TYPE_NUMBER = "Number"
 Greed.is.prototype.TYPE_BOOLEAN = "Boolean"
+
 
 Greed.fillData = (target, args...) ->
     target or= {}
@@ -66,9 +67,43 @@ Greed.serializeData = (data) ->
         return
     return params.join('&')
     
+###
+submit
+params should be object
+###
+Greed.submit = (url, params) ->
+    _d = document
+    keys = Object.keys(data or {})
+    
+    tempForm = _d.createElement 'form'
+    tempForm.setAttribute 'action', url
+    tempForm.setAttribute 'method', 'POST'
+    
+    for key in keys
+        tempInput = _d.createElement 'input'
+        tempInput.setAttribute 'type', 'text'
+        tempInput.setAttribute 'name', key
+        tempInput.setAttribute 'value', data[key]
+        tempForm.appendChild tempInput
+        
+    tempForm.submit()
+    return
+    
+###
+wrapper method of window.location.
+params should be object, and it will be converted into query string
+###
+Greed.location = (url, params) ->
+    document.location = url + (if opts.url.indexOf('?') > -1 then '&' else '?') + _g.serializeData params
+    return
 
 ###
 class editing utilities
+###
+
+###
+Add given class to the element.
+If clases parameter is array, add all classes to the element.
 ###
 Greed.addClass = (el, clases) ->
     if not el then return
@@ -79,6 +114,10 @@ Greed.addClass = (el, clases) ->
     
     return
 
+###
+Remove given class from the element.
+If clases parameter is array, remove all classes from the element.
+###
 Greed.removeClass = (el, clases) ->
     if not el then return
     
@@ -88,6 +127,12 @@ Greed.removeClass = (el, clases) ->
     
     return
     
+###
+Assert if the element has given class.
+Class parameter can be array.
+Return true if the element has of of the given classes.
+If `hasAll` parameter is true, then return true when the element has all of the given classes.
+###
 Greed.hasClass = (el, clases, hasAll) ->
     if not el then return
         
@@ -121,6 +166,21 @@ Greed.lazyLoadImg = (imgDataAttribute) ->
         image.src = image.getAttribute imgDataAttribute
         return
         
+    return
+    
+###
+copy Greed methods into target object
+###
+Greed.installInto = (target) ->
+    Greed.fillData target, Greed
+    return
+    
+###
+change alias of Greed
+###
+Greed.chAlias = (newAlias, oldAlias) ->
+    if oldAlias then delete window[oldAlias] else delete window['_g']
+    window[newAlias] = Greed
     return
     
 # export Greed to globals

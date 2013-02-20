@@ -1,3 +1,5 @@
+
+
 describe "ajaxSettings", ->
     settings = _g.AjaxCore::defaults
     

@@ -74,39 +74,20 @@ do (Greed) ->
             
         constructor: (fn) ->
             @_state = PENDING
-            #@always = @_storeCallbacks (=> @_state isnt PENDING), @_alwaysCallbacks or= []
-            #@done = @_storeCallbacks (=> @_state is RESOLVED), @_doneCallbacks or= []
-            #@fail = @_storeCallbacks (=> @_state is REJECTED), @_failCallbacks or= []
             
             fn.call(this, this) if typeof fn is 'function'
-            
-        #_storeCallbacks: (shouldExecuteNow, holder) =>
-            #return (args...) =>
-                #return this if args.length is 0
-                #functions = flatten args
-                #if @_state is PENDING then holder.push functions...
-                #
-                #if shouldExecuteNow()
-                    #functions.forEach (fn) =>
-                        #fn.apply @_context, @_withArguments
-                #this
                 
         always: (args...) =>
             _storeCallback.call @, (=> @_state isnt PENDING), @_alwaysCallbacks or= [], args
-            @
+            this
             
         done: (args...) =>
             _storeCallback.call @, (=> @_state is RESOLVED), @_doneCallbacks or= [], args
-            @
+            this
             
         fail: (args...) =>
             _storeCallback.call @, (=> @_state is REJECTED), @_failCallbacks or= [], args
-            @
-            
-        
-        #always: undefined   #define in the constructor
-        #done: undefined     #define in the constructor
-        #fail: undefined     #define in the constructor
+            this
             
         notify: (args...) =>
             @notifyWith(root, args...)
