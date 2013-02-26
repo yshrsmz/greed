@@ -38,6 +38,11 @@
 
   Greed.is.prototype.TYPE_BOOLEAN = "Boolean";
 
+  /*
+  copy properties from args, if target does not have them
+  */
+
+
   Greed.fillData = function() {
     var arg, args, key, keys, target, _i, _j, _len, _len1;
     target = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];

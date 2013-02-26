@@ -22,7 +22,9 @@ Greed.is.prototype.TYPE_OBJECT = "Object"
 Greed.is.prototype.TYPE_NUMBER = "Number"
 Greed.is.prototype.TYPE_BOOLEAN = "Boolean"
 
-
+###
+copy properties from args, if target does not have them
+###
 Greed.fillData = (target, args...) ->
     target or= {}
     
