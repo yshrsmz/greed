@@ -2,12 +2,12 @@
 # TODO integrate Greed.Deferred
 window.Greed = {} unless 'Greed' of window
 do (Greed) ->
-    _g = Greed or {}
+    gr = Greed or {}
     _doc = window.document
     
-    _g.activeAjaxCount = 0
-    _g.isAjaxActive = ->
-        not not _g.activeAjaxCount
+    gr.activeAjaxCount = 0
+    gr.isAjaxActive = ->
+        not not gr.activeAjaxCount
         
     emptyFunc = ->
         
@@ -18,7 +18,7 @@ do (Greed) ->
             @xhr = new XMLHttpRequest()
             @url = url
             @options = options
-            @_deferred = new _g.Deferred()
+            @_deferred = new gr.Deferred()
             @responseReceived = false
             @xhrTimeout = null
             
@@ -29,7 +29,7 @@ do (Greed) ->
                 @_deferred.rejectWith @
                 
             # return promise for callback
-            return @_deferred.promise()
+            #return @_deferred.promise()
             
         defaults:
             url: ''
@@ -50,6 +50,12 @@ do (Greed) ->
                 xml: 'application/xml, text/xml'
                 json: 'application/json, text/javascript'
         
+        ###
+        return promise for this xhr
+        ###
+        getPromise: ->
+            return @_deferred.promise()
+        
         _emptyFunc: ->
             
         _send: ->
@@ -59,10 +65,10 @@ do (Greed) ->
                 
             if opts.data
                 if opts.type is 'GET'
-                    opts.url += (if opts.url.indexOf('?') > -1 then '&' else '?') + _g.serializeData opts.data
+                    opts.url += (if opts.url.indexOf('?') > -1 then '&' else '?') + gr.serializeData opts.data
                     opts.data = null
                 else
-                    opts.data = _g.serializeData opts.data
+                    opts.data = gr.serializeData opts.data
                     
             # set request
             @xhr.open opts.type, opts.url, opts.async
@@ -71,19 +77,19 @@ do (Greed) ->
             if opts.dataType and opts.accepts[opts.dataType]
                 @xhr.setRequestHeader 'Accept', opts.accepts[opts.dataType]
                 
-            _g.activeAjaxCount++
+            gr.activeAjaxCount++
             
             #add callbacks to deferred
-            if _g.is 'Function', opts.success
+            if gr.is 'Function', opts.success
                 @_deferred.done opts.success
                 
-            if _g.is 'Function', opts.error
+            if gr.is 'Function', opts.error
                 @_deferred.fail opts.error
                 
-            if _g.is 'Function', opts.complete
+            if gr.is 'Function', opts.complete
                 @_deferred.always opts.complete
                 
-            if opts.timeoutDuration and _g.is 'Number', opts.timeoutDuration
+            if opts.timeoutDuration and gr.is 'Number', opts.timeoutDuration
                 @xhrTimeout = setTimeout @_onAjaxTimeout, opts.timeoutDuration
             
             if opts.async
@@ -97,11 +103,11 @@ do (Greed) ->
             
         _check: ->
             
-            if _g.is 'Object', @url
+            if gr.is 'Object', @url
                 @options = @url
                 @url = undefined
                 
-            @options = _g.fillData @options or {}, @defaults
+            @options = gr.fillData @options or {}, @defaults
             
             if not @options.url and @url
                 @options.url = @url
@@ -124,41 +130,43 @@ do (Greed) ->
                     if opts.dataType is 'json'
                         data = JSON.parse data
                         
-                    #if _g.is 'Function', opts.success
+                    #if gr.is 'Function', opts.success
                         #opts.success.call opts, data, @xhr.status, @xhr
                         
                     @_deferred.resolveWith @, data, @xhr.status, @xhr
                     
                 else
-                    #if _g.is 'Function', opts.error
+                    #if gr.is 'Function', opts.error
                         #opts.error.call opts, @xhr, @xhr.status
                         
                     @_deferred.rejectWith @, data, @xhr.status, @xhr
                 
-                #if _g.is 'Function', opts.complete
+                #if gr.is 'Function', opts.complete
                     #opts.complete.call opts, data, @xhr, @xhr.status
                     
-                _g.activeAjaxCount--
+                gr.activeAjaxCount--
             return
             
         _onAjaxTimeout: =>
             @xhr.onreadystatechange = @_emptyFunc
             @xhr.abort()
             
-            _g.activeAjaxCount--
-            if _g.is('Function', @options.onTimeout) then @options.onTimeout()
+            gr.activeAjaxCount--
+            if gr.is('Function', @options.onTimeout) then @options.onTimeout()
             return
     
-    _g.ajax = (url, options) ->
+    gr.ajax = (url, options) ->
         # return promise object for callback
-        new _g.AjaxCore(url, options)
+        ajaxCore = new gr.AjaxCore(url, options)
+        return ajaxCore.getPromise()
         
-    _g.ajaxJson = (url, options) ->
+    gr.ajaxJSON = (url, options) ->
         options or= {}
         options.dataType = 'json'
         # return promise object for callback
-        new _g.AjaxCore(url, options)
+        ajaxCore = new gr.AjaxCore(url, options)
+        ajaxCore.getPromise()
         
-    _g.AjaxCore = AjaxCore
+    gr.AjaxCore = AjaxCore
     
     return

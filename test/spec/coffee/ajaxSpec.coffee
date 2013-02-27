@@ -1,7 +1,7 @@
 
 
 describe "ajaxSettings", ->
-    settings = _g.AjaxCore::defaults
+    settings = gr.AjaxCore::defaults
     
     it "should 'POST' be default value of type", ->
         expect(settings.type).toEqual "POST"
@@ -65,7 +65,7 @@ describe "ajax", ->
         failSpy = jasmine.createSpy()
         alwaysSpy = jasmine.createSpy()
         
-        promise = _g.ajax()
+        promise = gr.ajax()
         
         promise
             .done(doneSpy)
@@ -89,7 +89,7 @@ describe "ajax", ->
         failSpy = jasmine.createSpy()
         alwaysSpy = jasmine.createSpy()
         
-        promise = _g.ajax('http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1')
+        promise = gr.ajax('http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1')
         
         expect(promise.constructor.name).toEqual "Promise"
         
@@ -122,7 +122,7 @@ describe "ajax", ->
         alwaysSpy = jasmine.createSpy()
         url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1'
         runs( ->
-            promise = _g.ajax(url, {
+            promise = gr.ajax(url, {
                     success: (data) ->
                         doneSpy()
                         serverResponse = data
@@ -159,7 +159,7 @@ describe "ajax", ->
         timeoutSpy = jasmine.createSpy()
         
         runs( ->
-            promise = _g.ajax(url, {
+            promise = gr.ajax(url, {
                     onTimeout: ->
                         timeoutSpy()
                         isCompleted = true
@@ -182,7 +182,7 @@ describe "ajax", ->
         
         return
         
-describe "ajaxJson", ->
+describe "ajaxJSON", ->
     
     it "should return response as Object", ->
         
@@ -198,14 +198,14 @@ describe "ajaxJson", ->
         failSpy = jasmine.createSpy()
         alwaysSpy = jasmine.createSpy()
         runs( ->
-            promise = _g.ajaxJson(url)
+            promise = gr.ajaxJSON(url)
             
             expect(promise.constructor.name).toEqual 'Promise'
         
             promise.done( (data) ->
                 console.log(data)
                 doneSpy()
-                expect(_g.is('Object', data)).toBeTruthy()
+                expect(gr.is('Object', data)).toBeTruthy()
                 serverResponse = data
                 isCompleted = true
                 return

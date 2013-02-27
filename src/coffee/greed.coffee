@@ -5,7 +5,7 @@ unless 'classList' of document.createElement('a')
 if not ('Greed' of window)
     Greed  = {}
     
-_g = Greed
+gr = Greed
     
 ###
 determne type of given object
@@ -33,9 +33,9 @@ Greed.fillData = (target, args...) ->
         for key in keys
             if Greed.is('Object', arg[key]) or Greed.is('Array', arg[key])
                 if not target.hasOwnProperty key
-                    target[key] = if _g.is "Array", arg[key] then [] else {}
+                    target[key] = if gr.is "Array", arg[key] then [] else {}
                 
-                _g.fillData target[key], arg[key]
+                gr.fillData target[key], arg[key]
             else
                 if not target.hasOwnProperty key
                     target[key] = arg[key]
@@ -66,7 +66,6 @@ Greed.serializeData = (data) ->
         param = encodeURIComponent(key).replace(regexSpace, '+') +
             '=' + encodeURIComponent(value).replace(regexSpace, '+')
         params.push param
-        return
     return params.join('&')
     
 ###
@@ -75,7 +74,7 @@ params should be object
 ###
 Greed.submit = (url, params) ->
     _d = document
-    keys = Object.keys(data or {})
+    keys = Object.keys(params or {})
     
     tempForm = _d.createElement 'form'
     tempForm.setAttribute 'action', url
@@ -85,7 +84,7 @@ Greed.submit = (url, params) ->
         tempInput = _d.createElement 'input'
         tempInput.setAttribute 'type', 'text'
         tempInput.setAttribute 'name', key
-        tempInput.setAttribute 'value', data[key]
+        tempInput.setAttribute 'value', params[key]
         tempForm.appendChild tempInput
         
     tempForm.submit()
@@ -96,7 +95,7 @@ wrapper method of window.location.
 params should be object, and it will be converted into query string
 ###
 Greed.location = (url, params) ->
-    document.location = url + (if opts.url.indexOf('?') > -1 then '&' else '?') + _g.serializeData params
+    document.location = url + (if opts.url.indexOf('?') > -1 then '&' else '?') + gr.serializeData params
     return
 
 ###
@@ -181,10 +180,10 @@ Greed.installInto = (target) ->
 change alias of Greed
 ###
 Greed.chAlias = (newAlias, oldAlias) ->
-    if oldAlias then delete window[oldAlias] else delete window['_g']
+    if oldAlias then delete window[oldAlias] else delete window['gr']
     window[newAlias] = Greed
     return
     
 # export Greed to globals
 window.Greed = Greed
-window._g = window.Greed
+window.gr = window.Greed

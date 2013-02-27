@@ -6,7 +6,7 @@
 window.Greed = {} unless 'Greed' of window
 
 do (Greed) ->
-    _g = Greed or {}
+    gr = Greed or {}
     
     PENDING = 'pending'
     RESOLVED = 'resolved'
@@ -204,6 +204,6 @@ do (Greed) ->
         
         allReady.promise()
         
-    _g.Deferred = Deferred
+    gr.Deferred = Deferred
     
     return
