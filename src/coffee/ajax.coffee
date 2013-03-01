@@ -1,15 +1,11 @@
 # Greed Ajax function
-# TODO integrate Greed.Deferred
 window.Greed = {} unless 'Greed' of window
 do (Greed) ->
     gr = Greed or {}
-    _doc = window.document
     
     gr.activeAjaxCount = 0
     gr.isAjaxActive = ->
         not not gr.activeAjaxCount
-        
-    emptyFunc = ->
         
     
     class AjaxCore
@@ -28,8 +24,6 @@ do (Greed) ->
                 # reject so that callbacks can be executed immediately
                 @_deferred.rejectWith @
                 
-            # return promise for callback
-            #return @_deferred.promise()
             
         defaults:
             url: ''

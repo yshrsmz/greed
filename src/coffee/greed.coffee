@@ -14,14 +14,6 @@ Greed.is = (type, obj) ->
     clas = Object.prototype.toString.call(obj).slice 8, -1
     obj isnt undefined and obj isnt null and clas is type
 
-Greed.is.prototype.TYPE_FUNCTION = "Function"
-Greed.is.prototype.TYPE_STRING = "String"
-Greed.is.prototype.TYPE_DATE = "Date"
-Greed.is.prototype.TYPE_ARRAY = "Array"
-Greed.is.prototype.TYPE_OBJECT = "Object"
-Greed.is.prototype.TYPE_NUMBER = "Number"
-Greed.is.prototype.TYPE_BOOLEAN = "Boolean"
-
 ###
 copy properties from args, if target does not have them
 ###

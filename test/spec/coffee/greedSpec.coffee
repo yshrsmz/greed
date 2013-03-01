@@ -268,3 +268,17 @@ describe "gr.fillData", ->
         return
         
     return
+    
+describe "gr.serializeData", ->
+    
+    it "should make query string from object", ->
+        target = 
+            foo: 'bar'
+            ary: ['a', 'b', 'c']
+            
+        answer = 'foo=bar&ary=a,b,c'
+        
+        expect(gr.serializeData(target)).toEqual answer
+        
+        return
+    return

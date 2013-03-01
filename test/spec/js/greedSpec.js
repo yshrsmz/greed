@@ -239,4 +239,16 @@
     });
   });
 
+  describe("gr.serializeData", function() {
+    it("should make query string from object", function() {
+      var answer, target;
+      target = {
+        foo: 'bar',
+        ary: ['a', 'b', 'c']
+      };
+      answer = 'foo=bar&ary=a%2Cb%2Cc';
+      expect(gr.serializeData(target)).toEqual(answer);
+    });
+  });
+
 }).call(this);

@@ -7,14 +7,12 @@
   }
 
   (function(Greed) {
-    var AjaxCore, emptyFunc, gr, _doc;
+    var AjaxCore, gr;
     gr = Greed || {};
-    _doc = window.document;
     gr.activeAjaxCount = 0;
     gr.isAjaxActive = function() {
       return !!gr.activeAjaxCount;
     };
-    emptyFunc = function() {};
     AjaxCore = (function() {
 
       function AjaxCore(url, options) {
