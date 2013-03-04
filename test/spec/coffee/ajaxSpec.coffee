@@ -189,7 +189,7 @@ describe "ajaxJSON", ->
         serverResponse = null
         isCompleted = false
         promise = undefined
-        url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1'
+        url = 'http://proxy-yshrsmz.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1'
         doneSpy = undefined
         failSpy = undefined
         alwaysSpy = undefined

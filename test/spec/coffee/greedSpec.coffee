@@ -276,7 +276,7 @@ describe "gr.serializeData", ->
             foo: 'bar'
             ary: ['a', 'b', 'c']
             
-        answer = 'foo=bar&ary=a,b,c'
+        answer = 'foo=bar&ary=a%2Cb%2Cc'
         
         expect(gr.serializeData(target)).toEqual answer
         

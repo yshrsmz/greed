@@ -153,7 +153,7 @@
       serverResponse = null;
       isCompleted = false;
       promise = void 0;
-      url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1';
+      url = 'http://proxy-yshrsmz.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1';
       doneSpy = void 0;
       failSpy = void 0;
       alwaysSpy = void 0;
