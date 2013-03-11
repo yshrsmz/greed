@@ -109,7 +109,7 @@
           this.options = this.url;
           this.url = void 0;
         }
-        this.options = gr.fillData(this.options || {}, this.defaults);
+        this.options = gr.extend(this.options || {}, this.defaults);
         if (!this.options.url && this.url) {
           this.options.url = this.url;
         }

@@ -161,7 +161,7 @@
     });
   });
 
-  describe("gr.fillData", function() {
+  describe("gr.extend", function() {
     var answer, src1, src2, target;
     target = void 0;
     src1 = void 0;
@@ -197,7 +197,7 @@
         hoo_1: 456,
         fuga_1: 'fuga_1'
       };
-      result = gr.fillData(target, src1);
+      result = gr.extend(target, src1);
       expect(result).toEqual(answer);
     });
     it("should merge multiple src into target, if given", function() {
@@ -234,7 +234,7 @@
         hoo_2: 789,
         fuga_2: 'fuga_2'
       };
-      result = gr.fillData(target, src1, src2);
+      result = gr.extend(target, src1, src2);
       expect(result).toEqual(answer);
     });
   });

@@ -101,7 +101,7 @@ do (Greed) ->
                 @options = @url
                 @url = undefined
                 
-            @options = gr.fillData @options or {}, @defaults
+            @options = gr.extend @options or {}, @defaults
             
             if not @options.url and @url
                 @options.url = @url

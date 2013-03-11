@@ -17,7 +17,7 @@ Greed.is = (type, obj) ->
 ###
 copy properties from args, if target does not have them
 ###
-Greed.fillData = (target, args...) ->
+Greed.extend = (target, args...) ->
     target or= {}
     
     for arg in args
@@ -27,7 +27,7 @@ Greed.fillData = (target, args...) ->
                 if not target.hasOwnProperty key
                     target[key] = if gr.is "Array", arg[key] then [] else {}
                 
-                gr.fillData target[key], arg[key]
+                gr.extend target[key], arg[key]
             else
                 if not target.hasOwnProperty key
                     target[key] = arg[key]
@@ -35,9 +35,9 @@ Greed.fillData = (target, args...) ->
     target
     
 ###
-extend prototype
+inherit prototype
 ###
-Greed.extend = (Child, Parent) ->
+Greed.inherit = (Child, Parent) ->
     F = ->
     F:: = Parent::
     Child:: = new F()
@@ -165,7 +165,7 @@ Greed.lazyLoadImg = (imgDataAttribute) ->
 copy Greed methods into target object
 ###
 Greed.installInto = (target) ->
-    Greed.fillData target, Greed
+    Greed.extend target, Greed
     return
     
 ###

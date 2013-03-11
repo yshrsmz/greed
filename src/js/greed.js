@@ -29,7 +29,7 @@
   */
 
 
-  Greed.fillData = function() {
+  Greed.extend = function() {
     var arg, args, key, keys, target, _i, _j, _len, _len1;
     target = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     target || (target = {});
@@ -42,7 +42,7 @@
           if (!target.hasOwnProperty(key)) {
             target[key] = gr.is("Array", arg[key]) ? [] : {};
           }
-          gr.fillData(target[key], arg[key]);
+          gr.extend(target[key], arg[key]);
         } else {
           if (!target.hasOwnProperty(key)) {
             target[key] = arg[key];
@@ -54,11 +54,11 @@
   };
 
   /*
-  extend prototype
+  inherit prototype
   */
 
 
-  Greed.extend = function(Child, Parent) {
+  Greed.inherit = function(Child, Parent) {
     var F;
     F = function() {};
     F.prototype = Parent.prototype;
@@ -227,7 +227,7 @@
 
 
   Greed.installInto = function(target) {
-    Greed.fillData(target, Greed);
+    Greed.extend(target, Greed);
   };
 
   /*
