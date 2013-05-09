@@ -69,7 +69,7 @@
       doneSpy = jasmine.createSpy();
       failSpy = jasmine.createSpy();
       alwaysSpy = jasmine.createSpy();
-      promise = gr.ajax('http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1');
+      promise = gr.ajax('http://www51.atpages.jp/yshrsmz/proxy/index.php?url=http://github.com/&full_headers=1&full_status=1');
       expect(promise.constructor.name).toEqual("Promise");
       promise.done(function(res) {
         doneSpy();
@@ -93,7 +93,7 @@
       doneSpy = jasmine.createSpy();
       failSpy = jasmine.createSpy();
       alwaysSpy = jasmine.createSpy();
-      url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1';
+      url = 'http://www51.atpages.jp/yshrsmz/proxy/index.php?url=http://github.com/&full_headers=1&full_status=1';
       runs(function() {
         return promise = gr.ajax(url, {
           success: function(data) {
@@ -121,7 +121,7 @@
       promise = void 0;
       isCompleted = false;
       promise = void 0;
-      url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=yshrsmzajax-yoshimurasei.dotcloud.com/ajax-test';
+      url = 'http://www51.atpages.jp/yshrsmz/proxy/index.php?url=yshrsmzajax-yoshimurasei.dotcloud.com/ajax-test';
       doneSpy = jasmine.createSpy();
       failSpy = jasmine.createSpy();
       alwaysSpy = jasmine.createSpy();
@@ -153,7 +153,7 @@
       serverResponse = null;
       isCompleted = false;
       promise = void 0;
-      url = 'http://proxy-yshrsmz.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1';
+      url = 'http://www51.atpages.jp/yshrsmz/proxy/index.php?url=http://github.com/&full_headers=1&full_status=1';
       doneSpy = void 0;
       failSpy = void 0;
       alwaysSpy = void 0;

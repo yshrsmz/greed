@@ -89,7 +89,7 @@ describe "ajax", ->
         failSpy = jasmine.createSpy()
         alwaysSpy = jasmine.createSpy()
         
-        promise = gr.ajax('http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1')
+        promise = gr.ajax('http://www51.atpages.jp/yshrsmz/proxy/index.php?url=http://github.com/&full_headers=1&full_status=1')
         
         expect(promise.constructor.name).toEqual "Promise"
         
@@ -120,7 +120,7 @@ describe "ajax", ->
         doneSpy = jasmine.createSpy()
         failSpy = jasmine.createSpy()
         alwaysSpy = jasmine.createSpy()
-        url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1'
+        url = 'http://www51.atpages.jp/yshrsmz/proxy/index.php?url=http://github.com/&full_headers=1&full_status=1'
         runs( ->
             promise = gr.ajax(url, {
                     success: (data) ->
@@ -151,7 +151,7 @@ describe "ajax", ->
         promise = undefined
         isCompleted = false
         promise = undefined
-        url = 'http://simpleproxy-yoshimurasei.dotcloud.com/?url=yshrsmzajax-yoshimurasei.dotcloud.com/ajax-test'
+        url = 'http://www51.atpages.jp/yshrsmz/proxy/index.php?url=yshrsmzajax-yoshimurasei.dotcloud.com/ajax-test'
         
         doneSpy = jasmine.createSpy()
         failSpy = jasmine.createSpy()
@@ -189,7 +189,7 @@ describe "ajaxJSON", ->
         serverResponse = null
         isCompleted = false
         promise = undefined
-        url = 'http://proxy-yshrsmz.dotcloud.com/?url=http://github.com/&full_headers=1&full_status=1'
+        url = 'http://www51.atpages.jp/yshrsmz/proxy/index.php?url=http://github.com/&full_headers=1&full_status=1'
         doneSpy = undefined
         failSpy = undefined
         alwaysSpy = undefined

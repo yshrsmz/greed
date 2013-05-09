@@ -13,6 +13,11 @@ determne type of given object
 Greed.is = (type, obj) ->
     clas = Object.prototype.toString.call(obj).slice 8, -1
     obj isnt undefined and obj isnt null and clas is type
+    
+Greed.isEmptyObject = (obj) ->
+    for name of obj
+        return false
+    return true
 
 ###
 copy properties from args, if target does not have them
@@ -87,7 +92,7 @@ wrapper method of window.location.
 params should be object, and it will be converted into query string
 ###
 Greed.location = (url, params) ->
-    document.location = url + (if opts.url.indexOf('?') > -1 then '&' else '?') + gr.serializeData params
+    document.location = url + (if url.indexOf('?') > -1 then (if Greed.isEmptyObject(params) then '' else '&') else (if Greed.isEmptyObject(params) then '' else '?')) + gr.serializeData params
     return
 
 ###
