@@ -21,7 +21,7 @@
       return obj != null ? obj.hasOwnProperty(prop) : void 0;
     };
     isArguments = function(obj) {
-      return hasOwn(obj, 'length' && hasOwn(obj, 'callee'));
+      return hasOwn(obj, 'length') && hasOwn(obj, 'callee');
     };
     isObservable = function(obj) {
       return (obj instanceof Deferred) || (obj instanceof Promise);

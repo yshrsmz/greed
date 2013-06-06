@@ -72,12 +72,12 @@
       promise = gr.ajax('http://www51.atpages.jp/yshrsmz/proxy/index.php?url=http://github.com/&full_headers=1&full_status=1');
       expect(promise.constructor.name).toEqual("Promise");
       promise.done(function(res) {
+        serverResponse = res;
         doneSpy();
-        return serverResponse = res;
       }).fail(failSpy).always(alwaysSpy);
       waitsFor(function() {
         return !!serverResponse;
-      }, 'get server response', 2000);
+      }, 'get server response', 3000);
       runs(function() {
         expect(doneSpy).toHaveBeenCalled();
         expect(failSpy).not.toHaveBeenCalled();

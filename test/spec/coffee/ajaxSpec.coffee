@@ -89,20 +89,25 @@ describe "ajax", ->
         failSpy = jasmine.createSpy()
         alwaysSpy = jasmine.createSpy()
         
+
         promise = gr.ajax('http://www51.atpages.jp/yshrsmz/proxy/index.php?url=http://github.com/&full_headers=1&full_status=1')
         
         expect(promise.constructor.name).toEqual "Promise"
         
         promise
             .done((res) ->
-                doneSpy()
+                
                 serverResponse = res
+                doneSpy()
+                return
             ).fail(failSpy)
             .always(alwaysSpy)
+
         
         waitsFor(->
+            #not not serverResponse
             not not serverResponse
-        , 'get server response', 2000)
+        , 'get server response', 3000)
         
         runs(->
             expect(doneSpy).toHaveBeenCalled()

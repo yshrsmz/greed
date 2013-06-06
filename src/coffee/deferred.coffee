@@ -18,7 +18,7 @@ do (Greed) ->
     root = this
     
     hasOwn = (obj, prop) -> obj?.hasOwnProperty prop
-    isArguments = (obj) -> hasOwn obj, 'length' and hasOwn obj, 'callee'
+    isArguments = (obj) -> hasOwn(obj, 'length') and hasOwn(obj, 'callee')
     
     isObservable = (obj) ->
         (obj instanceof Deferred) or (obj instanceof Promise)
